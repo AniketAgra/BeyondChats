@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
-import { v2 as cloudinary } from 'cloudinary'
+import cloudinaryPkg from 'cloudinary'
+const cloudinary = cloudinaryPkg.v2 || cloudinaryPkg
 
 dotenv.config()
 

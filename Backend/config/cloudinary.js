@@ -1,5 +1,7 @@
 import dotenv from 'dotenv'
-import { v2 as cloudinary } from 'cloudinary'
+// cloudinary v1 default export exposes v2 under .v2 as well; use .v2 when available
+import cloudinaryPkg from 'cloudinary'
+const cloudinary = cloudinaryPkg.v2 || cloudinaryPkg
 
 dotenv.config()
 
