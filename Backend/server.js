@@ -28,7 +28,7 @@ app.use('/api/notes', notesRouter);
 app.use('/api/quiz', quizRouter);
 
 const PORT = process.env.PORT || 4000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/edulearn';
+const MONGO_URI = process.env.MONGO_URI;
 
 async function start() {
   try {

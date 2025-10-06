@@ -1,31 +1,74 @@
-import pdfParse from 'pdf-parse';
+// NOTE: Import from the library file directly to avoid an upstream index.js
+// behavior that tries to read a non-existent test PDF on import in some setups.
+// Ref: ENOENT .../test/data/05-versions-space.pdf
+import pdfParse from 'pdf-parse/lib/pdf-parse.js';
+import mongoose from 'mongoose';
 import Summary from '../schemas/Summary.js';
 
 export async function parsePdf(buffer) {
-  const data = await pdfParse(buffer);
-  return { text: data.text, numPages: data.numpages };
+  try {
+    const data = await pdfParse(buffer);
+    return { text: data.text, numPages: data.numpages };
+  } catch (err) {
+    // Fallback: use pdfjs to at least determine page count and get minimal text
+    try {
+      const pdfjs = await import('pdfjs-dist/legacy/build/pdf.js');
+      const loadingTask = pdfjs.getDocument({ data: buffer });
+      const doc = await loadingTask.promise;
+      const numPages = doc.numPages;
+      let text = '';
+      // Extract first couple of pages to keep it fast if full extraction fails
+      const maxPages = Math.min(numPages, 5);
+      for (let i = 1; i <= maxPages; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(it => it.str).join(' ') + '\n';
+      }
+      return { text, numPages };
+    } catch (fallbackErr) {
+      // Re-throw original for clarity if both fail
+      throw err;
+    }
+  }
 }
 
 async function llmSummarize(text) {
   const apiKey = process.env.OPENAI_API_KEY;
+  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+  const maxInput = Number(process.env.SUMMARIZE_MAX_CHARS || 12000);
+  const input = (text || '').slice(0, maxInput);
+
+  const fallback = () => input.slice(0, 800) + (input.length > 800 ? '…' : '');
+
   if (!apiKey) {
     // Mock summary in dev without key
-    return text.slice(0, 800) + (text.length > 800 ? '…' : '');
+    return fallback();
   }
-  const prompt = `Summarize the following study material into 5-8 bullet points with key topics and definitions.\n\n${text}`;
+  const prompt = `Summarize the following study material into 5-8 bullet points with key topics and definitions.\n\n${input}`;
   // Lazy import to avoid dependency unless needed
-  const { default: axios } = await import('axios');
-  const res = await axios.post(
-    'https://api.openai.com/v1/chat/completions',
-    {
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
-      max_tokens: 400
-    },
-    { headers: { Authorization: `Bearer ${apiKey}` } }
-  );
-  return res.data.choices?.[0]?.message?.content || '';
+  try {
+    const { default: axios } = await import('axios');
+    const res = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        max_tokens: 400
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 20000
+      }
+    );
+    return res.data.choices?.[0]?.message?.content || fallback();
+  } catch (err) {
+    // Degrade gracefully if API fails
+    return fallback();
+  }
 }
 
 export async function summarizePdf({ text, buffer, pdfId }) {
@@ -36,15 +79,37 @@ export async function summarizePdf({ text, buffer, pdfId }) {
   }
   if (!content) throw new Error('No text to summarize');
 
-  // cache by pdfId if provided
-  if (pdfId && Summary.findOne) {
-    const cached = await Summary.findOne({ pdfId });
-    if (cached) return { summary: cached.summary, cached: true };
+  // Helper: check DB connectivity (1 = connected)
+  const isDbConnected = () => {
+    try {
+      return mongoose?.connection?.readyState === 1;
+    } catch {
+      return false;
+    }
+  };
+
+  // cache by pdfId if provided and DB is available
+  if (pdfId && isDbConnected()) {
+    try {
+      const cached = await Summary.findOne({ pdfId }).lean();
+      if (cached) return { summary: cached.summary, cached: true };
+    } catch (e) {
+      // Ignore DB errors in mock/no-DB mode
+    }
   }
   const summary = await llmSummarize(content);
 
-  if (pdfId && Summary.create) {
-    await Summary.create({ pdfId, summary });
+  if (pdfId && isDbConnected()) {
+    try {
+      // Upsert to avoid duplicate key errors on unique pdfId
+      await Summary.updateOne(
+        { pdfId },
+        { $set: { summary } },
+        { upsert: true }
+      );
+    } catch (e) {
+      // Swallow DB errors when operating without a DB
+    }
   }
   return { summary, cached: false };
 }

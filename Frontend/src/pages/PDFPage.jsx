@@ -18,10 +18,16 @@ export default function PDFPage() {
 
   const onSummarize = async () => {
     if (!state?.file) return
-    const { summary } = await pdfApi.summarize({ file: state.file, pdfId: state.id })
-    setSummary(summary)
-    const vids = await ytApi.suggest(summary?.slice(0, 64))
-    setVideos(vids)
+    try {
+      const { summary } = await pdfApi.summarize({ file: state.file, pdfId: state.id })
+      setSummary(summary)
+      const vids = await ytApi.suggest(summary?.slice(0, 64))
+      setVideos(vids)
+    } catch (err) {
+      console.error('Summarize failed', err)
+      const msg = err?.response?.data?.error || err?.message || 'Failed to summarize'
+      alert(msg)
+    }
   }
 
   return (

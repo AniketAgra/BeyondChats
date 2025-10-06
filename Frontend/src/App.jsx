@@ -2,6 +2,7 @@ import React from 'react'
 import { Routes, Route, Navigate, Link } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import SourceSelector from './pages/SourceSelector.jsx'
+import LibraryPage from './pages/LibraryPage.jsx'
 import PDFPage from './pages/PDFPage.jsx'
 import QuizPage from './pages/QuizPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
@@ -15,7 +16,7 @@ export default function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Navigate to="/library" />} />
-        <Route path="/library" element={<SourceSelector />} />
+  <Route path="/library" element={<LibraryPage />} />
         <Route path="/pdf/:id" element={<PDFPage />} />
         <Route path="/quiz" element={<QuizPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
