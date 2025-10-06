@@ -75,6 +75,7 @@ export const pdfApi = {
   },
   list: async () => (await api.get('/pdf')).data.items,
   get: async (id) => (await api.get(`/pdf/${id}`)).data,
+  getUrl: async (id) => (await api.get(`/pdf/${id}/url`)).data.url,
   upload: async (file, onProgress) => {
     const fd = new FormData()
     fd.append('pdf', file)
@@ -86,6 +87,14 @@ export const pdfApi = {
       }
     })
     return data.pdf || data.data
+  },
+  uploadByUrl: async ({ url, title, author, imageUrl }) => {
+    const payload = { url }
+    if (title) payload.title = title
+    if (author) payload.author = author
+    if (imageUrl) payload.imageUrl = imageUrl
+    const { data } = await api.post('/pdf/from-url', payload)
+    return data.pdf || data
   },
   __rawUpload: async (formData, onProgress) => {
     const { data } = await api.post('/pdf/upload', formData, {

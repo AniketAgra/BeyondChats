@@ -11,7 +11,7 @@ export default function PDFPage() {
   const { id } = useParams()
   const [summary, setSummary] = useState('')
   const [videos, setVideos] = useState([])
-  const [fileSrc, setFileSrc] = useState(state?.file || null)
+  const [fileSrc, setFileSrc] = useState(state?.pdfUrl || state?.url || state?.file || null)
   const [docMeta, setDocMeta] = useState(state || null)
   const outline = useMemo(() => [
     { title: 'Introduction', page: 1 },
@@ -21,17 +21,21 @@ export default function PDFPage() {
 
   useEffect(() => {
     (async () => {
-      if (!state && id) {
-        try {
+      try {
+        if (!id) return
+        // Always attempt to resolve a working URL via backend
+  const resolved = await pdfApi.getUrl(id)
+  if (resolved) setFileSrc({ url: resolved, withCredentials: false })
+        if (!docMeta) {
           const data = await pdfApi.get(id)
-          setDocMeta({ id: data.id, name: data.filename, url: data.url })
-          setFileSrc(data.url)
-        } catch (e) {
-          console.error('Failed to load PDF meta', e)
+          setDocMeta({ id: data.id, name: data.title || data.filename, url: data.pdfUrl || data.url })
         }
+      } catch (e) {
+        // If resolution fails and we have state, fall back to state url
+  if (state?.pdfUrl || state?.url) setFileSrc({ url: state.pdfUrl || state.url, withCredentials: false })
       }
     })()
-  }, [id, state])
+  }, [id])
 
   const onSummarize = async () => {
     if (!fileSrc && !docMeta?.id) return

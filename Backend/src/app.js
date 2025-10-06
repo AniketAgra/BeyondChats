@@ -10,6 +10,7 @@ import quizRouter from './routes/quiz.js';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
 import analyticsRouter from './routes/analytics.js';
+import debugRouter from './routes/debug.js';
 
 const app = express();
 
@@ -31,5 +32,8 @@ app.use('/api/quiz', quizRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/analytics', analyticsRouter);
+if (String(process.env.ENABLE_DEBUG_ROUTES).toLowerCase() === 'true') {
+	app.use('/api/debug', debugRouter);
+}
 
 export default app;

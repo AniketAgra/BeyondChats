@@ -19,6 +19,8 @@ const PdfSchema = new Schema(
     author: { type: String, default: '' },
     imageUrl: { type: String, default: '' },
     pdfUrl: { type: String, required: true },
+  // Supabase storage object path (when bucket is private or when we want to sign URLs)
+  storagePath: { type: String },
     chapters: { type: [String], default: [] },
     summary: { type: String, default: '' }
   },
