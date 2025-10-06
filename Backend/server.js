@@ -6,6 +6,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import pdfRouter from './src/routes/pdf.js';
+import pdfUploadRouter from './src/routes/pdfRoutes.js';
 import youtubeRouter from './src/routes/youtube.js';
 import notesRouter from './src/routes/notes.js';
 import quizRouter from './src/routes/quiz.js';
@@ -21,6 +22,7 @@ app.get('/api/health', (_, res) => res.json({ ok: true }));
 
 // API routes
 app.use('/api/pdf', pdfRouter);
+app.use('/api/pdf', pdfUploadRouter); // /api/pdf/upload
 app.use('/api/youtube', youtubeRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/quiz', quizRouter);
