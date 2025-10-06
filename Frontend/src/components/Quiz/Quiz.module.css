@@ -1,0 +1,11 @@
+.controls { display: flex; gap: 12px; align-items: end; }
+.controls label { display: grid; gap: 6px; font-size: 14px; }
+.previewList { margin-left: 16px; }
+
+.player { display: grid; gap: 16px; }
+.progress { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.progress > div { background: var(--accent); height: 100%; }
+.options { display: grid; gap: 8px; }
+.options label { padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); display: flex; gap: 8px; align-items: center; }
+.selected { outline: 2px solid var(--accent); }
+.playerNav { display: flex; gap: 8px; }

@@ -1,0 +1,23 @@
+.sidebar {
+  width: 260px;
+  border-right: 1px solid var(--border);
+  padding: var(--space-4);
+}
+.search {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  border-radius: var(--radius);
+}
+.list { margin-top: var(--space-4); display: grid; gap: 6px; }
+.item {
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+}
+.item:hover { background: var(--card); }
