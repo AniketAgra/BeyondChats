@@ -21,7 +21,8 @@ export default function PDFPage() {
     try {
       const { summary } = await pdfApi.summarize({ file: state.file, pdfId: state.id })
       setSummary(summary)
-      const vids = await ytApi.suggest(summary?.slice(0, 64))
+      const topic = `${state?.name || state?.filename || ''} ${summary || ''}`.trim().slice(0, 300)
+      const vids = await ytApi.suggest(topic)
       setVideos(vids)
     } catch (err) {
       console.error('Summarize failed', err)
