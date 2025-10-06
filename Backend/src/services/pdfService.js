@@ -3,6 +3,7 @@
 // Ref: ENOENT .../test/data/05-versions-space.pdf
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import mongoose from 'mongoose';
+import Pdf from '../schemas/Pdf.js';
 import Summary from '../schemas/Summary.js';
 
 export async function parsePdf(buffer) {
@@ -76,6 +77,21 @@ export async function summarizePdf({ text, buffer, pdfId }) {
   if (!content && buffer) {
     const parsed = await parsePdf(buffer);
     content = parsed.text;
+  }
+  // If pdfId provided and still no content, try fetching the PDF file from its URL
+  if (!content && pdfId) {
+    try {
+      const doc = await Pdf.findById(pdfId).lean();
+      const url = doc?.url;
+      if (url) {
+        const { default: axios } = await import('axios');
+        const resp = await axios.get(url, { responseType: 'arraybuffer' });
+        const parsed = await parsePdf(Buffer.from(resp.data));
+        content = parsed.text;
+      }
+    } catch (e) {
+      // ignore and continue to error below if still no content
+    }
   }
   if (!content) throw new Error('No text to summarize');
 

@@ -1,20 +1,36 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './LibraryPage.module.css'
 import { useNavigate } from 'react-router-dom'
 import { pdfApi } from '../utils/api.js'
 
-// Minimal demo data for UI when nothing uploaded yet
-const seed = [
-  { id: '1', name: 'Calculus: Early Transcendentals', author: 'James Stewart', date: '2024-01-15', pages: 850 },
-  { id: '2', name: 'Linear Algebra and Its Applications', author: 'Gilbert Strang', date: '2024-02-20', pages: 500 },
-  { id: '3', name: 'Introduction to Probability', author: 'Blitzstein & Hwang', date: '2024-03-10', pages: 430 }
-]
+// Load data from API (no dummy items)
 
 export default function LibraryPage() {
-  const [items, setItems] = useState(seed)
-  const [selectedId, setSelectedId] = useState(seed[0].id)
+  const [items, setItems] = useState([])
+  const [selectedId, setSelectedId] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState(0)
   const inputRef = useRef(null)
   const nav = useNavigate()
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await pdfApi.list()
+        setItems(list.map(it => ({
+          id: it.id,
+          name: it.filename?.replace(/\.pdf$/i, '') || it.filename || 'PDF',
+          author: 'Unknown',
+          date: (it.uploadedAt || it.createdAt || new Date()).toString(),
+          pages: it.pages || '-',
+          url: it.url
+        })))
+        setSelectedId(prev => prev || (list[0]?.id || null))
+      } catch (e) {
+        console.error('Failed to load PDFs', e)
+      }
+    })()
+  }, [])
 
   const selected = useMemo(() => items.find(i => i.id === selectedId), [items, selectedId])
 
@@ -22,14 +38,26 @@ export default function LibraryPage() {
     const file = e.target.files?.[0]
     if (!file) return
     try {
-      const parsed = await pdfApi.parse(file)
-      const id = `${Date.now()}`
-      const item = { id, name: file.name.replace(/\.pdf$/i, ''), author: 'Unknown', date: new Date().toISOString().slice(0,10), pages: parsed.numPages, file }
+  // Upload to server + DB with progress
+  setUploading(true)
+  setProgress(0)
+  const uploaded = await pdfApi.upload(file, (p) => setProgress(p))
+      const item = {
+        id: uploaded.id,
+        name: uploaded.filename?.replace(/\.pdf$/i, '') || file.name.replace(/\.pdf$/i, ''),
+        author: 'Unknown',
+        date: (uploaded.uploadedAt || new Date()).toString(),
+        pages: '-',
+        url: uploaded.url
+      }
       setItems(x => [item, ...x])
-      setSelectedId(id)
+      setSelectedId(item.id)
+  setUploading(false)
+  setProgress(100)
     } catch (err) {
       console.error(err)
-      alert('Failed to parse PDF')
+      alert('Failed to upload PDF')
+  setUploading(false)
     }
   }
 
@@ -59,6 +87,16 @@ export default function LibraryPage() {
         </aside>
 
         <section className={styles.preview}>
+          {uploading && (
+            <div className="card" style={{ padding: 12, marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1, height: 8, background: 'var(--border)', borderRadius: 999 }}>
+                  <div style={{ width: `${progress}%`, height: '100%', background: 'var(--accent-strong)', borderRadius: 999, transition: 'width .15s' }} />
+                </div>
+                <div style={{ minWidth: 40, textAlign: 'right' }}>{progress}%</div>
+              </div>
+            </div>
+          )}
           <div className={styles.previewBody}>
             <div className={styles.cover}>
               {/* Placeholder cover */}

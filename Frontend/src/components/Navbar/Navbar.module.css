@@ -14,3 +14,9 @@
 .nav a:hover { background: var(--card); }
 .active { color: var(--accent-strong); }
 .left { display: flex; align-items: center; }
+.authLinks { display:flex; align-items:center; gap:12px; margin-left:12px; }
+.authLinks a { padding:6px 10px; border-radius:8px; border:1px solid var(--border); }
+.authLinks a.signup { background: var(--accent-weak); border-color: var(--accent-weak); }
+.userArea { display:flex; align-items:center; gap:12px; margin-left:12px; }
+.userName { opacity: 0.8; }
+.logoutBtn { padding:6px 10px; border-radius:8px; border:1px solid var(--border); background: transparent; cursor: pointer; }

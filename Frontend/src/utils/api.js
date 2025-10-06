@@ -1,6 +1,62 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api' })
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+  withCredentials: true,
+})
+
+let accessToken = null
+export function setAccessToken(token) {
+  accessToken = token || null
+}
+
+// Attach Authorization header if we have a token
+api.interceptors.request.use((config) => {
+  if (accessToken) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${accessToken}`
+  }
+  return config
+})
+
+// On 401, try refresh once then retry original request
+let isRefreshing = false
+let pending = []
+function subscribe(cb) { pending.push(cb) }
+function onRefreshed(newToken) { pending.forEach((cb) => cb(newToken)); pending = [] }
+
+api.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const original = error.config || {}
+    const path = (original.url || '')
+    // Don't try to refresh if the refresh call itself failed
+    if (error.response?.status === 401 && !original._retry && !path.includes('/auth/refresh')) {
+      original._retry = true
+      try {
+        if (isRefreshing) {
+          const newToken = await new Promise((resolve) => subscribe(resolve))
+          setAccessToken(newToken)
+          original.headers = original.headers || {}
+          original.headers.Authorization = `Bearer ${newToken}`
+          return api(original)
+        }
+        isRefreshing = true
+        const { data } = await api.post('/auth/refresh')
+        isRefreshing = false
+        onRefreshed(data.accessToken)
+        setAccessToken(data.accessToken)
+        original.headers = original.headers || {}
+        original.headers.Authorization = `Bearer ${data.accessToken}`
+        return api(original)
+      } catch (e) {
+        isRefreshing = false
+        pending = []
+      }
+    }
+    return Promise.reject(error)
+  }
+)
 
 export const pdfApi = {
   parse: async (file) => {
@@ -16,6 +72,20 @@ export const pdfApi = {
     if (pdfId) fd.append('pdfId', pdfId)
     const { data } = await api.post('/pdf/summarize', fd)
     return data
+  },
+  list: async () => (await api.get('/pdf')).data.items,
+  get: async (id) => (await api.get(`/pdf/${id}`)).data,
+  upload: async (file, onProgress) => {
+    const fd = new FormData()
+    fd.append('pdf', file)
+    const { data } = await api.post('/pdf/upload', fd, {
+      onUploadProgress: (e) => {
+        if (!onProgress) return
+        const percent = e.total ? Math.round((e.loaded * 100) / e.total) : 0
+        onProgress(percent)
+      }
+    })
+    return data.data // return uploaded doc payload
   }
 }
 
@@ -34,6 +104,14 @@ export const notesApi = {
 export const quizApi = {
   generate: async (payload) => (await api.post('/quiz/generate', payload)).data,
   submit: async (payload) => (await api.post('/quiz/submit', payload)).data
+}
+
+export const authApi = {
+  signup: async (payload) => (await api.post('/auth/signup', payload)).data,
+  login: async (payload) => (await api.post('/auth/login', payload)).data,
+  logout: async () => (await api.post('/auth/logout')).data,
+  refresh: async () => (await api.post('/auth/refresh')).data,
+  me: async () => (await api.get('/auth/me')).data,
 }
 
 export default api
