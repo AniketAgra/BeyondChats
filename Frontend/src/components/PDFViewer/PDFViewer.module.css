@@ -6,4 +6,10 @@
 .summary { padding: var(--space-5); }
 .summaryText { white-space: pre-wrap; line-height: 1.6; }
 
+/* Hide any PDF.js text or annotation layers if they still mount */
+.react-pdf__Page__textContent,
+.react-pdf__Page__annotations {
+	display: none !important;
+}
+
 @media (max-width: 900px) { .viewer { padding: var(--space-2); } }

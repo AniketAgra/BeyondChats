@@ -22,7 +22,12 @@ export default function PDFViewer({ file, summary, videos, onSummarize }) {
       <div className={styles.viewer}>
         {file ? (
           <Document file={file} onLoadSuccess={onDocumentLoadSuccess} className={styles.doc}>
-            <Page pageNumber={pageNumber} width={780} />
+            <Page
+              pageNumber={pageNumber}
+              width={780}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+            />
           </Document>
         ) : (
           <div className="card" style={{ padding: 24 }}>Upload a PDF to begin.</div>
