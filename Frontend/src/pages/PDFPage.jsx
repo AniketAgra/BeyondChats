@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import Sidebar from '../components/Sidebar/Sidebar.jsx'
 import PDFViewer from '../components/PDFViewer/PDFViewer.jsx'
-import ChatPanel from '../components/ChatPanel/ChatPanel.jsx'
-import NotesPanel from '../components/NotesPanel/NotesPanel.jsx'
+import RightPanel from '../components/RightPanel/RightPanel.jsx'
 import { pdfApi, ytApi } from '../utils/api.js'
 
 export default function PDFPage() {
@@ -53,15 +52,30 @@ export default function PDFPage() {
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr 360px', gap: 0, height: 'calc(100vh - 64px)' }}>
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: 'minmax(260px, 260px) minmax(0, 1fr) minmax(360px, 360px)', 
+      gap: 0, 
+      height: 'calc(100vh - 64px)', 
+      overflow: 'hidden',
+      width: '100%',
+      maxWidth: '100vw'
+    }}>
       <Sidebar outline={outline} onJump={() => {}} />
-      <div className="container" style={{ paddingTop: 16 }}>
-  <PDFViewer file={fileSrc} summary={summary} videos={videos} onSummarize={onSummarize} />
+      <div className="container" style={{ 
+        paddingTop: 16,
+        paddingLeft: 16,
+        paddingRight: 16,
+        height: '100%', 
+        minHeight: 0, 
+        minWidth: 0,
+        display: 'flex', 
+        flexDirection: 'column',
+        overflow: 'hidden'
+      }}>
+        <PDFViewer file={fileSrc} summary={summary} videos={videos} onSummarize={onSummarize} />
       </div>
-      <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', borderLeft: '1px solid var(--border)' }}>
-  <ChatPanel pdfId={id} />
-  <NotesPanel pdfId={docMeta?.id} page={1} />
-      </div>
+      <RightPanel pdfId={id} notePdfId={docMeta?.id} page={1} />
     </div>
   )
 }

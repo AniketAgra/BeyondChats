@@ -12,6 +12,28 @@ export default function LibraryPage() {
   const [openUpload, setOpenUpload] = useState(false)
   const nav = useNavigate()
 
+  // Generate a nice, deterministic gradient based on a string (title/id)
+  function stringToGradient(str = '') {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) hash = (hash << 5) - hash + str.charCodeAt(i)
+    const h1 = Math.abs(hash) % 360
+    const h2 = (h1 + 40 + (Math.abs(hash) % 80)) % 360
+    const s1 = 65
+    const s2 = 70
+    const l1 = 78
+    const l2 = 68
+    return `linear-gradient(135deg, hsl(${h1} ${s1}% ${l1}%), hsl(${h2} ${s2}% ${l2}%))`
+  }
+
+  const getInitials = (name = 'PDF') =>
+    name
+      .replace(/[_-]+/g, ' ')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join('') || 'PDF'
+
   async function loadList(selectNewId) {
     try {
       const list = await pdfApi.list()
@@ -23,7 +45,7 @@ export default function LibraryPage() {
         pages: it.pages || '-',
         url: it.pdfUrl || it.url,
         chapters: Array.isArray(it.chapters) ? it.chapters : [],
-        imageUrl: it.imageUrl || null,
+  imageUrl: it.imageUrl || null,
       }))
       setItems(mapped)
       setSelectedId(prev => selectNewId || prev || (mapped[0]?.id || null))
@@ -47,16 +69,36 @@ export default function LibraryPage() {
       <div className={styles.wrapper}>
         <aside className={styles.sidebar}>
           <div className={styles.sidebarHeader}>
-            <span style={{ fontSize: 18 }}>My Library</span>
+            <span className={styles.sidebarTitle}>My Library</span>
+            <div className={styles.sidebarActions}>
+              <button
+                className={styles.uploadMini}
+                onClick={() => setOpenUpload(true)}
+                aria-label="Upload PDF"
+                title="Upload PDF"
+              >
+                + Upload
+              </button>
+            </div>
           </div>
-          <div className={styles.list}>
+          <button className={styles.allPdfs} type="button" aria-label="Show all PDFs">
+            <span className={styles.allPdfsIcon} aria-hidden>▦</span>
+            <span>All PDFs</span>
+          </button>
+          <div className={styles.list} role="list">
             {items.length === 0 && (
               <div className={styles.emptyList}>No PDFs uploaded yet</div>
             )}
             {items.map((it) => (
-              <div key={it.id} className={`${styles.item} ${selectedId === it.id ? styles.active : ''}`} onClick={() => setSelectedId(it.id)}>
-                <div style={{ width: 40, height: 40, borderRadius: 8, background: 'linear-gradient(135deg,#a7f3d0,#dbeafe)' }} />
-                <div>
+              <div key={it.id} className={`${styles.item} ${selectedId === it.id ? styles.active : ''}`} onClick={() => setSelectedId(it.id)} role="listitem" tabIndex={0} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelectedId(it.id)}>
+                <div
+                  className={styles.thumb}
+                  style={{ background: stringToGradient(it.name || it.id) }}
+                  aria-hidden
+                >
+                  <span className={styles.thumbText}>{getInitials(it.name)}</span>
+                </div>
+                <div className={styles.itemMain}>
                   <div className={styles.itemTitle}>{it.name}</div>
                   <div className={styles.itemMeta}>{new Date(it.date).toLocaleDateString()}</div>
                 </div>
@@ -82,12 +124,23 @@ export default function LibraryPage() {
           ) : (
             <div className={styles.previewBody}>
               <div className={styles.cover}>
-                {/* Placeholder cover */}
-                <img alt="cover" src={selected?.imageUrl || `https://dummyimage.com/480x640/e5f3ef/0a0a0a&text=${encodeURIComponent((selected?.name||'PDF').slice(0,20))}`} />
+                {selected?.imageUrl ? (
+                  <img alt={`${selected?.name} cover`} src={selected.imageUrl} />
+                ) : (
+                  <div
+                    className={styles.coverPh}
+                    style={{ background: stringToGradient(selected?.name || selected?.id) }}
+                    aria-label={`${selected?.name} cover placeholder`}
+                  >
+                    <span className={styles.coverTitle}>{selected?.name}</span>
+                  </div>
+                )}
               </div>
               <div className={styles.details}>
                 <div className={styles.title}>{selected?.name}</div>
-                <div className={styles.subtitle}>{selected?.author} • Uploaded on {selected?.date} • {selected?.pages} pages</div>
+                <div className={styles.subtitle}>
+                  {selected?.author} • Uploaded on {new Date(selected?.date || Date.now()).toLocaleString()} • {selected?.pages || '-'} pages
+                </div>
                 <div style={{ fontWeight: 700 }}>Chapters</div>
                 <div className={styles.chapters}>
                   {(selected?.chapters?.length ? selected.chapters : ["Functions and Models","Limits and Derivatives","Differentiation Rules","Applications of Differentiation","Integrals","Applications of Integration"]).map((c, i) => (
@@ -96,7 +149,6 @@ export default function LibraryPage() {
                 </div>
                 <div className={styles.actions}>
                   <button className={styles.open} onClick={() => nav(`/pdf/${selected?.id}`, { state: selected })}>Open in Viewer</button>
-                  <button className={styles.secondary}>Share</button>
                 </div>
               </div>
             </div>

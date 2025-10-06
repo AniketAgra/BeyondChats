@@ -1,27 +1,101 @@
-.wrapper { display: flex; flex-direction: column; gap: var(--space-4); }
-.toolbar { display: flex; align-items: center; gap: var(--space-2); }
-.meta { color: var(--muted); }
+.wrapper { 
+  display: flex; 
+  flex-direction: column; 
+  gap: var(--space-4); 
+  height: 100%; 
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: var(--space-4);
+}
+
+.toolbar { 
+  display: flex; 
+  align-items: center; 
+  gap: var(--space-3);
+  flex-shrink: 0;
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+
+.meta { 
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .spacer { flex: 1; }
-.viewer { display: flex; justify-content: center; padding: var(--space-4); background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
-.docStrip {
-	display: flex;
-	flex-direction: row;
-	gap: 16px;
-	overflow-x: auto;
-	overflow-y: hidden;
-	scroll-snap-type: x mandatory;
-	padding-bottom: 12px;
+
+.viewer { 
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-4); 
+  background: var(--bg);
+  border: none;
+  border-radius: 0; 
+  min-height: 0;
+  flex-shrink: 0;
 }
+.pageContainer { 
+  width: 100%; 
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.doc {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .pageWrap {
-	flex: 0 0 auto;
-	scroll-snap-align: start;
+	margin: 0 auto;
+	max-width: 100%;
 	border-radius: 8px;
-	box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.08);
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.08);
 	background: white;
+	overflow: hidden;
+	transition: all 0.2s ease;
 }
-.pageCanvas { display: block; }
-.summary { padding: var(--space-5); }
-.summaryText { white-space: pre-wrap; line-height: 1.6; }
+
+.pageWrap:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12), 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.pageCanvas { 
+  display: block; 
+  max-width: 100%; 
+  height: auto;
+}
+.summary { 
+  padding: var(--space-5);
+  flex-shrink: 0;
+  margin-top: var(--space-2);
+  border-radius: 12px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summaryText { 
+  white-space: pre-wrap; 
+  line-height: 1.7;
+  font-size: 14px;
+  color: var(--text);
+}
 
 /* Hide any PDF.js text or annotation layers if they still mount */
 .react-pdf__Page__textContent,

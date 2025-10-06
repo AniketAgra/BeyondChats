@@ -1,23 +1,204 @@
 .sidebar {
   width: 260px;
+  min-width: 260px;
+  max-width: 260px;
   border-right: 1px solid var(--border);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-3);
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
 }
+
+.header {
+  margin-bottom: var(--space-4);
+  padding: 0 var(--space-2);
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+  letter-spacing: -0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .search {
   width: 100%;
-  padding: 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  border-radius: var(--radius);
+  border-radius: 6px;
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  outline: none;
 }
-.list { margin-top: var(--space-4); display: grid; gap: 6px; }
+
+.search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(145, 201, 182, 0.1);
+}
+
+.search::placeholder {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.list { 
+  margin-top: var(--space-3); 
+  display: flex;
+  flex-direction: column;
+  gap: 4px; 
+  flex: 1 1 auto; 
+  overflow-y: auto; 
+  overflow-x: hidden;
+  min-height: 0;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
 .item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-align: left;
-  padding: 8px 10px;
-  border-radius: var(--radius);
-  border: 1px solid transparent;
+  padding: 12px 12px;
+  border-radius: 6px;
+  border: none;
   background: transparent;
   color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 44px;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
 }
-.item:hover { background: var(--card); }
+
+.item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--accent-strong);
+  border-radius: 0 2px 2px 0;
+  transition: height 0.2s ease;
+}
+
+.item:hover { 
+  background: var(--card); 
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.item:hover::before {
+  height: 60%;
+}
+
+.item:active {
+  transform: scale(0.98);
+  background: var(--border);
+}
+
+.itemNumber {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.item:hover .itemNumber {
+  background: var(--accent);
+  color: #083344;
+}
+
+.itemTitle {
+  flex: 1 1 auto;
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.itemPage {
+  flex-shrink: 0;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--card);
+  padding: 3px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  color: var(--muted);
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  background: var(--card);
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+}
+
+.emptyIcon {
+  font-size: 40px;
+  opacity: 0.4;
+  filter: grayscale(0.3);
+}
+
+.emptyText {
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+  opacity: 0.8;
+}

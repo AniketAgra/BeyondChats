@@ -8,50 +8,55 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 export default function PDFViewer({ file, summary, videos, onSummarize }) {
   const [numPages, setNumPages] = useState(null)
   const [pageNumber, setPageNumber] = useState(1)
-  const stripRef = useRef(null)
+  const containerRef = useRef(null)
+  const [containerWidth, setContainerWidth] = useState(780)
   function onDocumentLoadSuccess({ numPages }) { setNumPages(numPages) }
-  const pages = useMemo(() => Array.from({ length: numPages || 0 }, (_, i) => i + 1), [numPages])
 
+  // Keep the PDF page width responsive to its container to avoid overflow
   useEffect(() => {
-    // When pageNumber changes, scroll the strip to that page
-    const el = stripRef.current
+    const el = containerRef.current
     if (!el) return
-    const child = el.querySelector(`[data-page='${pageNumber}']`)
-    if (child && typeof child.scrollIntoView === 'function') {
-      child.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
-    }
-  }, [pageNumber])
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect?.width || 780
+      // cap maximum width so canvases don't get too large
+      setContainerWidth(Math.min(980, Math.max(320, Math.floor(w))))
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.toolbar}>
-        <button className="btn" onClick={() => setPageNumber((p) => Math.max(1, p - 1))}>Prev</button>
+        <button
+          className="btn"
+          onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
+          disabled={pageNumber <= 1}
+        >Prev</button>
         <div className={styles.meta}>Page {pageNumber} / {numPages || '?'}</div>
-        <button className="btn" onClick={() => setPageNumber((p) => Math.min(numPages || p+1, p + 1))}>Next</button>
+        <button
+          className="btn"
+          onClick={() => setPageNumber((p) => (numPages ? Math.min(numPages, p + 1) : p))}
+          disabled={!numPages || pageNumber >= numPages}
+        >Next</button>
         <div className={styles.spacer} />
         <button className="btn secondary" onClick={onSummarize}>Summarize PDF</button>
       </div>
       <div className={styles.viewer}>
         {file ? (
-          <Document file={file} onLoadSuccess={onDocumentLoadSuccess} className={styles.doc}>
-            <div ref={stripRef} className={styles.docStrip}>
-              {pages.map((n) => (
-                <div key={n} className={styles.pageWrap} data-page={n}>
-                  <Page
-                    pageNumber={n}
-                    width={780}
-                    className={styles.pageCanvas}
-                    renderTextLayer={false}
-                    renderAnnotationLayer={false}
-                    onLoadSuccess={() => {
-                      // update current page based on first visible element
-                      // noop, we rely on arrows; could add IntersectionObserver later
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </Document>
+          <div ref={containerRef} className={styles.pageContainer}>
+            <Document file={file} onLoadSuccess={onDocumentLoadSuccess} className={styles.doc}>
+              <div className={styles.pageWrap}>
+                <Page
+                  pageNumber={pageNumber}
+                  width={containerWidth}
+                  className={styles.pageCanvas}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
+                />
+              </div>
+            </Document>
+          </div>
         ) : (
           <div className="card" style={{ padding: 24 }}>Upload a PDF to begin.</div>
         )}
