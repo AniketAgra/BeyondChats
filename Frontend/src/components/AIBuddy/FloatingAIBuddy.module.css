@@ -1,0 +1,21 @@
+.fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #052e2e;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+  z-index: 1000;
+}
+.fab:hover { transform: scale(1.06); box-shadow: 0 10px 30px rgba(32,199,185,0.45); }
+.icon { pointer-events: none; }
+
+@media (max-width: 640px) { .fab { right: 16px; bottom: 16px; width: 52px; height: 52px; } }

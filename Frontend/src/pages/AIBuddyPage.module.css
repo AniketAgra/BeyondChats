@@ -1,0 +1,2 @@
+.wrap { min-height: calc(100vh - 64px); display: grid; place-items: center; }
+.title { font-size: 48px; letter-spacing: 2px; color: var(--text); text-transform: lowercase; }
