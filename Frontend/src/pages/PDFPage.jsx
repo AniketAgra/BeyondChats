@@ -55,7 +55,7 @@ export default function PDFPage() {
   <PDFViewer file={fileSrc} summary={summary} videos={videos} onSummarize={onSummarize} />
       </div>
       <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', borderLeft: '1px solid var(--border)' }}>
-        <ChatPanel />
+  <ChatPanel pdfId={id} />
   <NotesPanel pdfId={docMeta?.id} page={1} />
       </div>
     </div>

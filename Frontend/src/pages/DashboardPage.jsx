@@ -1,12 +1,17 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-
-const data = [
-  { name: 'Mon', score: 70 }, { name: 'Tue', score: 82 }, { name: 'Wed', score: 65 },
-  { name: 'Thu', score: 88 }, { name: 'Fri', score: 74 }, { name: 'Sat', score: 92 }, { name: 'Sun', score: 81 }
-]
+import { analyticsApi } from '../utils/api.js'
 
 export default function DashboardPage() {
+  const [data, setData] = useState([])
+  useEffect(() => { (async () => {
+    try {
+      const { recent } = await analyticsApi.overview()
+      const d = (recent || []).map((r) => ({ name: new Date(r.date).toLocaleDateString(), score: r.score }))
+      setData(d)
+    } catch (e) { /* ignore */ }
+  })() }, [])
+
   return (
     <div className="container">
       <h1>Your Learning Journey</h1>

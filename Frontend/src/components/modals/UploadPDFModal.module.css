@@ -1,0 +1,94 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--card);
+  color: var(--text);
+  width: 92vw;
+  max-width: 560px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.title { margin: 0; font-size: 18px; font-weight: 600; }
+.subtitle { margin: 0; color: var(--muted); font-size: 13px; }
+.close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.form {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+input[type="text"], input[type="url"], input[type="file"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+input::placeholder { color: var(--muted); }
+input[type="text"]:focus,
+input[type="url"]:focus,
+input[type="file"]:focus { outline: 2px solid var(--accent-strong); outline-offset: 1px; }
+
+/* Beautify file input button */
+input[type="file"]::-webkit-file-upload-button,
+input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #083344;
+  cursor: pointer;
+}
+.fileMeta { font-size: 12px; color: var(--muted); }
+.error {
+  color: #ff6b6b;
+  font-size: 13px;
+}
+.progress {
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.progress > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-strong), #7c3aed);
+  transition: width 0.2s ease;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.actions button { padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.primary { background: var(--accent); color: #083344; border: 1px solid transparent; }
+.actions button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

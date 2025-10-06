@@ -8,7 +8,7 @@ export async function requireAuth(req, res, next) {
     const token = header.startsWith('Bearer ') ? header.slice(7) : null
     if (!token) return res.status(401).json({ error: 'Missing token' })
 
-  const payload = jwt.verify(token, JWT_SECRET)
+    const payload = jwt.verify(token, JWT_SECRET)
     const user = await User.findById(payload.sub).select('-passwordHash -refreshToken')
     if (!user) return res.status(401).json({ error: 'Invalid token user' })
 
@@ -16,5 +16,20 @@ export async function requireAuth(req, res, next) {
     next()
   } catch (err) {
     return res.status(401).json({ error: 'Invalid token' })
+  }
+}
+
+// Helper to ensure a document belongs to the current user
+export function ensureOwner(model, idParam = 'id') {
+  return async function (req, res, next) {
+    try {
+      const id = req.params?.[idParam]
+      if (!id) return res.status(400).json({ error: 'Missing id' })
+      const doc = await model.findOne({ _id: id, user: req.user._id }).select('_id')
+      if (!doc) return res.status(404).json({ error: 'Not found' })
+      next()
+    } catch (e) {
+      return res.status(404).json({ error: 'Not found' })
+    }
   }
 }

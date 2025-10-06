@@ -72,7 +72,7 @@ async function llmSummarize(text) {
   }
 }
 
-export async function summarizePdf({ text, buffer, pdfId }) {
+export async function summarizePdf({ userId, text, buffer, pdfId }) {
   let content = text;
   if (!content && buffer) {
     const parsed = await parsePdf(buffer);
@@ -81,7 +81,7 @@ export async function summarizePdf({ text, buffer, pdfId }) {
   // If pdfId provided and still no content, try fetching the PDF file from its URL
   if (!content && pdfId) {
     try {
-      const doc = await Pdf.findById(pdfId).lean();
+  const doc = await Pdf.findOne({ _id: pdfId, user: userId }).lean();
       const url = doc?.url;
       if (url) {
         const { default: axios } = await import('axios');
@@ -105,9 +105,9 @@ export async function summarizePdf({ text, buffer, pdfId }) {
   };
 
   // cache by pdfId if provided and DB is available
-  if (pdfId && isDbConnected()) {
+  if (userId && pdfId && isDbConnected()) {
     try {
-      const cached = await Summary.findOne({ pdfId }).lean();
+      const cached = await Summary.findOne({ user: userId, pdfId }).lean();
       if (cached) return { summary: cached.summary, cached: true };
     } catch (e) {
       // Ignore DB errors in mock/no-DB mode
@@ -115,12 +115,12 @@ export async function summarizePdf({ text, buffer, pdfId }) {
   }
   const summary = await llmSummarize(content);
 
-  if (pdfId && isDbConnected()) {
+  if (userId && pdfId && isDbConnected()) {
     try {
       // Upsert to avoid duplicate key errors on unique pdfId
       await Summary.updateOne(
-        { pdfId },
-        { $set: { summary } },
+        { user: userId, pdfId },
+        { $set: { user: userId, pdfId, summary } },
         { upsert: true }
       );
     } catch (e) {

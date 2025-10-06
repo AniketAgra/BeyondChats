@@ -10,7 +10,7 @@ export default function QuizPlayer({ quiz, onExit }) {
   const progress = Math.round(((index) / quiz.questions.length) * 100)
 
   const submit = async () => {
-    const res = await quizApi.submit({ questions: quiz.questions, responses: answers })
+    const res = await quizApi.submit({ questions: quiz.questions, responses: answers, topic: quiz.topic, difficulty: quiz.difficulty })
     setResult(res)
   }
 

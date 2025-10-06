@@ -6,8 +6,9 @@ import cloudinary from '../../config/cloudinary.js'
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
+    const userId = req?.user?._id ? String(req.user._id) : 'anonymous'
     return {
-      folder: 'edulearn_pdfs',
+      folder: `edulearn_pdfs/${userId}`,
       resource_type: 'raw',
       public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`,
       format: 'pdf'

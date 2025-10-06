@@ -8,6 +8,8 @@ import youtubeRouter from './routes/youtube.js';
 import notesRouter from './routes/notes.js';
 import quizRouter from './routes/quiz.js';
 import authRouter from './routes/auth.js';
+import chatRouter from './routes/chat.js';
+import analyticsRouter from './routes/analytics.js';
 
 const app = express();
 
@@ -22,10 +24,12 @@ app.get('/api/health', (_, res) => res.json({ ok: true }));
 
 // API routes
 app.use('/api/pdf', pdfRouter);
-app.use('/api/pdf', pdfUploadRouter); // /api/pdf/upload
+app.use('/api/pdf', pdfUploadRouter); // /api/pdf/upload (auth enforced in router)
 app.use('/api/youtube', youtubeRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/quiz', quizRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/chat', chatRouter);
+app.use('/api/analytics', analyticsRouter);
 
 export default app;

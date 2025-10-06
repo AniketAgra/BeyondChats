@@ -85,7 +85,17 @@ export const pdfApi = {
         onProgress(percent)
       }
     })
-    return data.data // return uploaded doc payload
+    return data.pdf || data.data
+  },
+  __rawUpload: async (formData, onProgress) => {
+    const { data } = await api.post('/pdf/upload', formData, {
+      onUploadProgress: (e) => {
+        if (!onProgress) return
+        const percent = e.total ? Math.round((e.loaded * 100) / e.total) : 0
+        onProgress(percent)
+      }
+    })
+    return { data }
   }
 }
 
@@ -112,6 +122,15 @@ export const authApi = {
   logout: async () => (await api.post('/auth/logout')).data,
   refresh: async () => (await api.post('/auth/refresh')).data,
   me: async () => (await api.get('/auth/me')).data,
+}
+
+export const chatApi = {
+  list: async (pdfId) => (await api.get('/chat', { params: { pdfId } })).data.items,
+  send: async ({ content, pdfId }) => (await api.post('/chat/send', { content, pdfId })).data.messages,
+}
+
+export const analyticsApi = {
+  overview: async () => (await api.get('/analytics/overview')).data,
 }
 
 export default api

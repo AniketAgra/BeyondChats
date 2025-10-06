@@ -1,19 +1,34 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './ChatPanel.module.css'
+import { chatApi } from '../../utils/api.js'
 
-export default function ChatPanel() {
-  const [messages, setMessages] = useState([{ role: 'ai', content: 'How can I help you with this textbook?' }])
+export default function ChatPanel({ pdfId }) {
+  const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
-  const send = () => {
+  useEffect(() => { (async () => {
+    try {
+      const items = await chatApi.list(pdfId)
+      setMessages(items)
+    } catch {}
+  })() }, [pdfId])
+
+  const send = async () => {
     if (!input.trim()) return
-    setMessages((m) => [...m, { role: 'user', content: input }, { role: 'ai', content: 'Stub response about your PDF.' }])
-    setInput('')
+    try {
+      const msgs = await chatApi.send({ content: input, pdfId })
+      setMessages((m) => [...m, ...msgs])
+    } catch (e) {
+      // fallback optimistic UI
+      setMessages((m) => [...m, { role: 'user', content: input }, { role: 'ai', content: 'Aurora: (offline) reply.' }])
+    } finally {
+      setInput('')
+    }
   }
   return (
     <div className={styles.panel}>
       <div className={styles.thread}>
         {messages.map((m, i) => (
-          <div key={i} className={m.role === 'ai' ? styles.ai : styles.user}>{m.content}</div>
+          <div key={m._id || i} className={m.role === 'ai' ? styles.ai : styles.user}>{m.content}</div>
         ))}
       </div>
       <div className={styles.inputRow}>

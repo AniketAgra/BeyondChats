@@ -12,6 +12,7 @@
 
 .sidebarHeader { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 8px; }
 .list { display: grid; gap: 8px; }
+.emptyList { padding: 12px; color: var(--muted); font-size: 13px; text-align: center; border: 1px dashed var(--border); border-radius: 10px; background: var(--bg); }
 .item {
   display: grid;
   grid-template-columns: 40px 1fr auto;
@@ -47,6 +48,11 @@
   display: grid;
   gap: 16px;
 }
+.empty { display: grid; place-items: center; text-align: center; gap: 10px; padding: 40px 16px; }
+.emptyIcon { font-size: 48px; opacity: .7; }
+.emptyTitle { font-weight: 800; font-size: 18px; }
+.emptySubtitle { color: var(--muted); max-width: 520px; }
+.emptyActions { display: flex; gap: 10px; justify-content: center; }
 .previewBody { display: grid; grid-template-columns: 1fr; gap: 16px; }
 .cover {
   aspect-ratio: 3/4;
