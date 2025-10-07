@@ -6,6 +6,7 @@ import SourceSelector from './pages/SourceSelector.jsx'
 import LibraryPage from './pages/LibraryPage.jsx'
 import PDFPage from './pages/PDFPage.jsx'
 import QuizPage from './pages/QuizPage.jsx'
+import QuizzesHistoryPage from './pages/QuizzesHistoryPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import Navbar from './components/Navbar/Navbar.jsx'
 import FloatingAIBuddy from './components/AIBuddy/FloatingAIBuddy.jsx'
@@ -33,6 +34,7 @@ function AppContent() {
         <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
         <Route path="/pdf/:id" element={<ProtectedRoute><PDFPage /></ProtectedRoute>} />
         <Route path="/quiz" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
+        <Route path="/quizzes" element={<ProtectedRoute><QuizzesHistoryPage /></ProtectedRoute>} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/aibuddy" element={<ProtectedRoute><AIBuddyPage /></ProtectedRoute>} />
         <Route path="*" element={<div className="container">Not Found. <Link to="/library">Go to Library</Link></div>} />

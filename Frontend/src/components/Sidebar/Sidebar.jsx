@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './Sidebar.module.css'
 
-export default function Sidebar({ keyPoints = [], isCollapsed = false }) {
+export default function Sidebar({ keyPoints = [], isCollapsed = false, onGenerateQuiz }) {
   const truncateByWords = (text, maxWords = 20) => {
     const words = text.split(/\s+/)
     if (words.length <= maxWords) return text
@@ -33,6 +33,18 @@ export default function Sidebar({ keyPoints = [], isCollapsed = false }) {
           ))
         )}
       </div>
+      
+      {/* Generate Quiz Button */}
+      {onGenerateQuiz && (
+        <button 
+          className={styles.generateQuizButton}
+          onClick={onGenerateQuiz}
+          style={{ opacity: isCollapsed ? 0 : 1, pointerEvents: isCollapsed ? 'none' : 'auto' }}
+        >
+          <span className={styles.quizIcon}>🎯</span>
+          <span className={styles.quizText}>Generate Quiz</span>
+        </button>
+      )}
     </aside>
   )
 }

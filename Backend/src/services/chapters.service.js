@@ -74,9 +74,10 @@ ${(text || '').slice(0, 8000)}
 
 export async function generateSummary(text) {
   const prompt = `
-Summarize the following PDF into 2-3 concise paragraphs for a student audience.
-Avoid bullet points. Keep it objective and cover the main themes, definitions, and outcomes.
-
+Summarize the following PDF into 2-3 concise paragraphs for a student audience if pages are between 1 and 5 if the content is relevant.
+Summarize in brief about one para for each page if PDF contains a good number of character count and pages are more than 10. 
+Avoid bullet points. Keep it objective and cover the main themes, definitions, formulas(if required) and outcomes.
+If content is relevant also add some extra details present on Internet.
 Content:
 ${(text || '').slice(0, 9000)}
 `;

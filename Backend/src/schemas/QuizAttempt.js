@@ -5,6 +5,7 @@ const { Schema, Types } = mongoose
 const QuizAttemptSchema = new Schema(
   {
     user: { type: Types.ObjectId, ref: 'User', required: true, index: true },
+    pdf: { type: Types.ObjectId, ref: 'Pdf', index: true },
     topic: { type: String },
     difficulty: { type: String },
     score: { type: Number, required: true },
@@ -15,5 +16,6 @@ const QuizAttemptSchema = new Schema(
 )
 
 QuizAttemptSchema.index({ user: 1, createdAt: -1 })
+QuizAttemptSchema.index({ user: 1, pdf: 1 })
 
 export default mongoose.models.QuizAttempt || mongoose.model('QuizAttempt', QuizAttemptSchema)

@@ -124,7 +124,11 @@ export const notesApi = {
 
 export const quizApi = {
   generate: async (payload) => (await api.post('/quiz/generate', payload)).data,
-  submit: async (payload) => (await api.post('/quiz/submit', payload)).data
+  submit: async (payload) => (await api.post('/quiz/submit', payload)).data,
+  getAttempts: async (pdfId) => {
+    const params = pdfId ? { pdfId } : {}
+    return (await api.get('/quiz/attempts', { params })).data.attempts
+  }
 }
 
 export const authApi = {

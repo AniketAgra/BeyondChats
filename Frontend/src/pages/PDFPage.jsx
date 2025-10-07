@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useLocation, useParams } from 'react-router-dom'
+import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar/Sidebar.jsx'
 import PDFViewer from '../components/PDFViewer/PDFViewer.jsx'
 import RightPanel from '../components/RightPanel/RightPanel.jsx'
@@ -9,6 +9,7 @@ import { pdfApi, ytApi, keyFeaturesApi } from '../utils/api.js'
 export default function PDFPage() {
   const { state } = useLocation()
   const { id } = useParams()
+  const navigate = useNavigate()
   const [summary, setSummary] = useState('')
   const [videos, setVideos] = useState([])
   const [fileSrc, setFileSrc] = useState(state?.pdfUrl || state?.url || state?.file || null)
@@ -74,6 +75,10 @@ export default function PDFPage() {
     }
   }
 
+  const handleGenerateQuiz = () => {
+    navigate(`/quiz?pdfId=${id}`)
+  }
+
   const onSummarize = async () => {
     if (!fileSrc && !docMeta?.id) return
     try {
@@ -103,7 +108,7 @@ export default function PDFPage() {
       maxWidth: '100vw',
       transition: 'grid-template-columns 0.3s ease'
     }}>
-      <Sidebar keyPoints={keyPoints} status={keyFeaturesStatus} isCollapsed={isFullscreen} />
+      <Sidebar keyPoints={keyPoints} status={keyFeaturesStatus} isCollapsed={isFullscreen} onGenerateQuiz={handleGenerateQuiz} />
       <div className="container" style={{ 
         paddingTop: 16,
         paddingLeft: isFullscreen ? 8 : 16,

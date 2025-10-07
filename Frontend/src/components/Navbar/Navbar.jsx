@@ -16,6 +16,7 @@ export default function Navbar() {
         <nav className={styles.nav}>
           <Link className={pathname.startsWith('/library')?styles.active:''} to="/library">Library</Link>
           <Link className={pathname.startsWith('/dashboard')?styles.active:''} to="/dashboard">Dashboard</Link>
+          <Link className={pathname.startsWith('/quizzes')?styles.active:''} to="/quizzes">Quizzes</Link>
         </nav>
       </div>
       <div className={styles.right}>

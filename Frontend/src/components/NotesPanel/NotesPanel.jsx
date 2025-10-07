@@ -68,9 +68,8 @@ export default function NotesPanel({ pdfId, page }) {
       chunksRef.current = []
       const saved = await notesApi.create({ type: 'audio', content: base64, page: page || 1, pdfId })
       setItems((x) => [saved, ...x])
-      setIsRecording(false)
+      // Reset recording time only after save is complete
       setRecordingTime(0)
-      if (timerRef.current) clearInterval(timerRef.current)
       stream.getTracks().forEach(track => track.stop())
       setShowAddModal(false)
       setAddType(null)
@@ -88,6 +87,16 @@ export default function NotesPanel({ pdfId, page }) {
 
   const stopRec = () => {
     if (mediaRecorderRef.current?.state === 'recording') {
+      // Stop timer immediately to prevent UI lag
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+      
+      // Update UI state immediately
+      setIsRecording(false)
+      
+      // Stop the actual recording
       mediaRecorderRef.current.stop()
     }
   }
