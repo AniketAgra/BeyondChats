@@ -5,7 +5,7 @@ import YouTubeSuggestions from '../YouTubeSuggestions/YouTubeSuggestions.jsx'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
 
-export default function PDFViewer({ file, summary, videos, onSummarize }) {
+export default function PDFViewer({ file, summary, videos, onSummarize, isFullscreen, onToggleFullscreen }) {
   const [numPages, setNumPages] = useState(null)
   const [pageNumber, setPageNumber] = useState(1)
   const containerRef = useRef(null)
@@ -19,11 +19,13 @@ export default function PDFViewer({ file, summary, videos, onSummarize }) {
     const ro = new ResizeObserver((entries) => {
       const w = entries[0]?.contentRect?.width || 780
       // cap maximum width so canvases don't get too large
-      setContainerWidth(Math.min(980, Math.max(320, Math.floor(w))))
+      // In fullscreen mode, allow wider PDFs
+      const maxWidth = isFullscreen ? 1400 : 980
+      setContainerWidth(Math.min(maxWidth, Math.max(320, Math.floor(w))))
     })
     ro.observe(el)
     return () => ro.disconnect()
-  }, [])
+  }, [isFullscreen])
 
   return (
     <div className={styles.wrapper}>
@@ -40,11 +42,26 @@ export default function PDFViewer({ file, summary, videos, onSummarize }) {
           disabled={!numPages || pageNumber >= numPages}
         >Next</button>
         <div className={styles.spacer} />
+        <button 
+          className={styles.fullscreenBtn}
+          onClick={onToggleFullscreen}
+          title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        >
+          {isFullscreen ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+          )}
+        </button>
         <button className="btn secondary" onClick={onSummarize}>Summarize PDF</button>
       </div>
-      <div className={styles.viewer}>
+      <div className={`${styles.viewer} ${isFullscreen ? styles.fullscreen : ''}`}>
         {file ? (
-          <div ref={containerRef} className={styles.pageContainer}>
+          <div ref={containerRef} className={`${styles.pageContainer} ${isFullscreen ? styles.fullscreen : ''}`}>
             <Document file={file} onLoadSuccess={onDocumentLoadSuccess} className={styles.doc}>
               <div className={styles.pageWrap}>
                 <Page

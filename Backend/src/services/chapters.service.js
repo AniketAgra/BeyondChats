@@ -90,7 +90,47 @@ ${(text || '').slice(0, 9000)}
   return response.text || 'Summary unavailable.';
 }
 
+export async function generateKeyPoints(text) {
+  const prompt = `
+You are an AI assistant that analyzes PDF documents and extracts key points.
+Based on the following content, identify and extract the most important key topics, concepts, or highlights.
+
+Instructions:
+- Generate between 1-20 key points depending on the content richness and complexity
+- For simple or short content, generate 1-5 points
+- For moderate content, generate 6-11 points
+- For comprehensive content, generate 12-20 points
+- Each point should be one clear, concise sentence or phrase
+- Focus on the MOST important and unique information
+- Return ONLY a JSON array of strings, nothing else
+
+Example:
+["Newton's laws of motion describe the relationship between forces and motion", "Kinetic energy is proportional to mass and velocity squared", "Conservation of momentum applies in closed systems"]
+
+PDF Content:
+${(text || '').slice(0, 9000)}
+`;
+
+  const client = await getClient();
+  if (!client) {
+    // Dev fallback key points - extract from text
+    const lines = (text || '').split('\n').filter(l => l.trim().length > 20 && l.trim().length < 150);
+    const points = lines.slice(0, Math.min(8, Math.max(2, Math.floor(lines.length / 20)))).map(l => l.trim());
+    return points.length > 0 ? points : ['Key concepts from the document'];
+  }
+  const response = await client.generate({ model: 'gemini-1.5-flash', prompt });
+  try {
+    const output = JSON.parse(response.text || '[]');
+    if (Array.isArray(output) && output.length > 0) return output;
+  } catch {}
+  // Fallback if parsing fails - try to extract from text
+  const lines = (text || '').split('\n').filter(l => l.trim().length > 20 && l.trim().length < 150);
+  const points = lines.slice(0, Math.min(5, Math.max(2, Math.floor(lines.length / 20)))).map(l => l.trim());
+  return points.length > 0 ? points : ['Unable to extract key points from document'];
+}
+
 export default {
   generateChaptersFromText,
   generateSummary,
+  generateKeyPoints,
 }

@@ -2,11 +2,11 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './FloatingAIBuddy.module.css'
 
-export default function FloatingAIBuddy() {
+export default function FloatingAIBuddy({ isPDFPage = false }) {
   const navigate = useNavigate()
   return (
     <button
-      className={styles.fab}
+      className={isPDFPage ? styles.fabPDF : styles.fab}
       aria-label="Open AI Buddy"
       title="AI Buddy"
       onClick={() => navigate('/aibuddy')}

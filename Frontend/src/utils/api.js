@@ -142,4 +142,9 @@ export const analyticsApi = {
   overview: async () => (await api.get('/analytics/overview')).data,
 }
 
+export const keyFeaturesApi = {
+  get: async (pdfId) => (await api.get(`/key-features/${pdfId}`)).data,
+  generate: async (pdfId) => (await api.post(`/key-features/generate/${pdfId}`)).data,
+}
+
 export default api

@@ -3,7 +3,8 @@ import multer from 'multer'
 import pdf from 'pdf-parse/lib/pdf-parse.js'
 import { requireAuth } from '../middlewares/auth.js'
 import Pdf from '../schemas/Pdf.js'
-import { generateChaptersFromText, generateSummary } from '../services/ai.service.js'
+import KeyFeatures from '../schemas/KeyFeatures.js'
+import { generateChaptersFromText, generateSummary, generateKeyPoints } from '../services/chapters.service.js'
 import { upload as memoryUpload } from '../middlewares/upload.js'
 import axios from 'axios'
 import mime from 'mime-types'
@@ -101,6 +102,11 @@ router.post('/upload', requireAuth, localUpload.single('pdf'), async (req, res) 
 			summary,
 		})
 
+		// 5) Start async key features generation (don't wait)
+		generateKeyFeaturesAsync(pdfText, req.user._id, doc._id).catch(err => {
+			console.error('Background key features generation failed:', err)
+		})
+
 		return res.status(201).json({ success: true, pdf: doc })
 	} catch (e) {
 			// Add more details server-side while keeping response generic
@@ -180,6 +186,13 @@ router.post('/from-url', requireAuth, async (req, res) => {
 			chapters,
 			summary,
 		})
+
+		// 5) Start async key features generation if we have text
+		if (pdfText) {
+			generateKeyFeaturesAsync(pdfText, req.user._id, doc._id).catch(err => {
+				console.error('Background key features generation failed:', err)
+			})
+		}
 
 		return res.status(201).json({ success: true, pdf: doc })
 	} catch (e) {
@@ -262,5 +275,37 @@ router.get('/:id/url', requireAuth, async (req, res) => {
 		res.status(500).json({ error: e.message })
 	}
 })
+
+// Helper function to generate key features asynchronously
+async function generateKeyFeaturesAsync(pdfText, userId, pdfId) {
+	try {
+		// Create pending key features document
+		await KeyFeatures.create({
+			user: userId,
+			pdfId,
+			keyPoints: [],
+			status: 'generating'
+		}).catch(() => {}) // Ignore if already exists
+
+		// Generate key points
+		const keyPoints = await generateKeyPoints(pdfText)
+
+		// Update with results
+		await KeyFeatures.findOneAndUpdate(
+			{ user: userId, pdfId },
+			{ keyPoints, status: 'completed' },
+			{ upsert: true }
+		)
+
+		console.log(`Key features generated for PDF ${pdfId}`)
+	} catch (error) {
+		console.error('Key features generation error:', error)
+		await KeyFeatures.findOneAndUpdate(
+			{ user: userId, pdfId },
+			{ status: 'failed' },
+			{ upsert: true }
+		).catch(() => {})
+	}
+}
 
 export default router

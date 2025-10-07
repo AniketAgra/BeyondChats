@@ -32,15 +32,16 @@ body {
   font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
   background: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
 }
 
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
 
 .container {
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: var(--space-5);
+  padding: 24px;
 }
 
 .card {

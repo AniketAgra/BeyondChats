@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import styles from './LibraryPage.module.css'
 import { useNavigate } from 'react-router-dom'
-import { pdfApi } from '../utils/api.js'
+import { pdfApi, keyFeaturesApi } from '../utils/api.js'
 import UploadPDFModal from '../components/modals/UploadPDFModal.jsx'
 
 // Load data from API (no dummy items)
@@ -10,7 +10,15 @@ export default function LibraryPage() {
   const [items, setItems] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [openUpload, setOpenUpload] = useState(false)
+  const [keyFeaturesMap, setKeyFeaturesMap] = useState({}) // { pdfId: { status, keyPoints } }
   const nav = useNavigate()
+
+  // Truncate text by word count
+  const truncateByWords = (text, maxWords = 15) => {
+    const words = text.split(/\s+/)
+    if (words.length <= maxWords) return text
+    return words.slice(0, maxWords).join(' ') + '...'
+  }
 
   // Generate a nice, deterministic gradient based on a string (title/id)
   function stringToGradient(str = '') {
@@ -49,8 +57,35 @@ export default function LibraryPage() {
       }))
       setItems(mapped)
       setSelectedId(prev => selectNewId || prev || (mapped[0]?.id || null))
+      
+      // Fetch key features for all PDFs
+      fetchKeyFeaturesForAll(mapped.map(it => it.id))
     } catch (e) {
       console.error('Failed to load PDFs', e)
+    }
+  }
+
+  async function fetchKeyFeaturesForAll(pdfIds) {
+    const map = {}
+    for (const pdfId of pdfIds) {
+      try {
+        const result = await keyFeaturesApi.get(pdfId)
+        map[pdfId] = {
+          status: result.status || 'not_found',
+          keyPoints: result.keyPoints || []
+        }
+      } catch (e) {
+        map[pdfId] = { status: 'error', keyPoints: [] }
+      }
+    }
+    setKeyFeaturesMap(map)
+    
+    // Poll for any that are still generating
+    const generating = Object.entries(map).filter(([_, v]) => v.status === 'generating')
+    if (generating.length > 0) {
+      setTimeout(() => {
+        fetchKeyFeaturesForAll(generating.map(([id]) => id))
+      }, 3000) // Poll every 3 seconds
     }
   }
 
@@ -141,12 +176,48 @@ export default function LibraryPage() {
                 <div className={styles.subtitle}>
                   {selected?.author} • Uploaded on {new Date(selected?.date || Date.now()).toLocaleString()} • {selected?.pages || '-'} pages
                 </div>
-                <div style={{ fontWeight: 700 }}>Chapters</div>
-                <div className={styles.chapters}>
-                  {(selected?.chapters?.length ? selected.chapters : ["Functions and Models","Limits and Derivatives","Differentiation Rules","Applications of Differentiation","Integrals","Applications of Integration"]).map((c, i) => (
-                    <div key={i} className={styles.chapter}>{i+1}. {c}</div>
-                  ))}
-                </div>
+                <div style={{ fontWeight: 700 }}>Key Points</div>
+                {(() => {
+                  const keyFeaturesData = keyFeaturesMap[selected?.id]
+                  const isGenerating = keyFeaturesData?.status === 'generating' || keyFeaturesData?.status === 'pending'
+                  const keyPoints = keyFeaturesData?.keyPoints || []
+                  
+                  if (isGenerating) {
+                    return (
+                      <div className={styles.keyPointsLoading}>
+                        <div className={styles.loadingPulse}></div>
+                        <div className={styles.loadingText}>Generating key points...</div>
+                      </div>
+                    )
+                  }
+                  
+                  if (!keyPoints.length) {
+                    return (
+                      <div className={styles.keyPointsEmpty}>
+                        <span>No key points available yet</span>
+                      </div>
+                    )
+                  }
+                  
+                  const displayPoints = keyPoints.slice(0, 5)
+                  const hasMore = keyPoints.length > 5
+                  
+                  return (
+                    <div className={styles.keyPoints}>
+                      {displayPoints.map((kp, i) => (
+                        <div key={i} className={styles.keyPoint} title={kp}>
+                          <span className={styles.keyPointBullet}>•</span>
+                          <span>{truncateByWords(kp, 15)}</span>
+                        </div>
+                      ))}
+                      {hasMore && (
+                        <div className={styles.keyPointMore}>
+                          ...
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
                 <div className={styles.actions}>
                   <button className={styles.open} onClick={() => nav(`/pdf/${selected?.id}`, { state: selected })}>Open in Viewer</button>
                 </div>

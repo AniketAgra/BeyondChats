@@ -5,6 +5,11 @@
   min-height: 0;
   border-left: 1px solid var(--border);
   background: var(--bg);
+  transition: all 0.3s ease;
+}
+
+.panel.collapsed {
+  overflow: hidden;
 }
 
 .header {

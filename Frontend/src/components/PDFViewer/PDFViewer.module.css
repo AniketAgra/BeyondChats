@@ -7,6 +7,33 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding-bottom: var(--space-4);
+  padding-right: 8px;
+}
+
+/* Custom Scrollbar Styling */
+.wrapper::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wrapper::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.wrapper::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Firefox scrollbar */
+.wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 .toolbar { 
@@ -26,6 +53,30 @@
 
 .spacer { flex: 1; }
 
+.fullscreenBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--accent-strong);
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fullscreenBtn:hover {
+  background: var(--accent);
+  color: #083344;
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.fullscreenBtn:active {
+  transform: scale(0.98);
+}
+
 .viewer { 
   display: flex; 
   justify-content: center;
@@ -37,12 +88,22 @@
   min-height: 0;
   flex-shrink: 0;
 }
+
+.viewer.fullscreen {
+  padding: var(--space-2) 0;
+}
+
 .pageContainer { 
   width: 100%; 
-  max-width: 100%;
+  max-width: 1200px;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.pageContainer.fullscreen {
+  max-width: 100%;
+  padding: 0 var(--space-6);
 }
 
 .doc {

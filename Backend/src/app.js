@@ -11,6 +11,7 @@ import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
 import analyticsRouter from './routes/analytics.js';
 import debugRouter from './routes/debug.js';
+import keyFeaturesRouter from './routes/keyFeatures.js';
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/quiz', quizRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/analytics', analyticsRouter);
+app.use('/api/key-features', keyFeaturesRouter);
 if (String(process.env.ENABLE_DEBUG_ROUTES).toLowerCase() === 'true') {
 	app.use('/api/debug', debugRouter);
 }

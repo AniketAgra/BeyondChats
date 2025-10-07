@@ -3,12 +3,12 @@ import styles from './RightPanel.module.css'
 import ChatPanel from '../ChatPanel/ChatPanel'
 import NotesPanel from '../NotesPanel/NotesPanel'
 
-export default function RightPanel({ pdfId, notePdfId, page }) {
+export default function RightPanel({ pdfId, notePdfId, page, isCollapsed = false }) {
   const [tab, setTab] = useState('chat')
 
   return (
-    <aside className={styles.panel}>
-      <div className={styles.header}>
+    <aside className={`${styles.panel} ${isCollapsed ? styles.collapsed : ''}`}>
+      <div className={styles.header} style={{ opacity: isCollapsed ? 0 : 1 }}>
         <div className={styles.tabs}>
           <button
             className={tab==='chat' ? `${styles.tabBtn} ${styles.tabActive}` : styles.tabBtn}
@@ -21,7 +21,7 @@ export default function RightPanel({ pdfId, notePdfId, page }) {
         </div>
       </div>
 
-      <div className={styles.content}>
+      <div className={styles.content} style={{ opacity: isCollapsed ? 0 : 1 }}>
         <div className={styles.scrollArea}>
           <section className={tab==='chat' ? `${styles.section} ${styles.active}` : styles.section}>
             <div className={styles.sectionInner}>
