@@ -11,7 +11,7 @@ async function createLlmClient() {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
     return {
-      async generate({ model = 'gemini-1.5-flash', prompt }) {
+      async generate({ model = 'gemini-2.0-flash', prompt }) {
         const m = genAI.getGenerativeModel({ model });
         const res = await m.generateContent(prompt);
         const text = res.response?.text?.() || res.response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -64,7 +64,7 @@ ${(text || '').slice(0, 8000)}
     // Dev fallback
     return ['Introduction', 'Chapter 1', 'Chapter 2'];
   }
-  const response = await client.generate({ model: 'gemini-1.5-flash', prompt });
+  const response = await client.generate({ model: 'gemini-2.0-flash', prompt });
   try {
     const output = JSON.parse(response.text || '[]');
     if (Array.isArray(output)) return output;
@@ -82,11 +82,11 @@ ${(text || '').slice(0, 9000)}
 `;
   const client = await getClient();
   if (!client) {
-    // Dev fallback summary
+    // Dev fallback summary - return full text without truncation
     const t = (text || '').slice(0, 600);
-    return t ? `${t}...` : 'Summary unavailable.';
+    return t || 'Summary unavailable.';
   }
-  const response = await client.generate({ model: 'gemini-1.5-flash', prompt });
+  const response = await client.generate({ model: 'gemini-2.0-flash', prompt });
   return response.text || 'Summary unavailable.';
 }
 

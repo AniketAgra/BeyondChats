@@ -51,13 +51,71 @@ button { font-family: inherit; }
 }
 
 .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: var(--accent);
   color: #083344;
-  border: none;
+  border: 1px solid color-mix(in oklab, var(--accent) 70%, #0000);
   padding: 10px 14px;
-  border-radius: var(--radius);
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
+  transition: background .18s ease, box-shadow .18s ease, transform .12s ease, border-color .18s ease, color .18s ease;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.05), 0 2px 10px rgba(0,0,0,0.06);
+}
+.btn:hover {
+  background: var(--accent-strong);
+  transform: translateY(-1px);
 }
 
-.btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-.btn.ghost { background: transparent; color: var(--text); }
+.btn:active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-strong) 35%, #0000);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: .6;
+  cursor: not-allowed;
+  filter: grayscale(.15);
+}
+
+/* Secondary button */
+.btn.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+.btn.secondary:hover {
+  background: color-mix(in oklab, var(--card) 70%, #0000);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--text) 40%);
+}
+
+/* Ghost button */
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+.btn.ghost:hover { background: rgba(0,0,0,0.04); }
+
+/* Icon-only button helper */
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+/* Ensure icons inside buttons scale nicely */
+.btn svg { width: 1.1em; height: 1.1em; }

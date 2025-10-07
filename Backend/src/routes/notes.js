@@ -29,4 +29,31 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    if (!content) return res.status(400).json({ error: 'Missing content' });
+    const note = await Notes.findOne?.({ _id: id, user: req.user._id });
+    if (!note) return res.status(404).json({ error: 'Note not found' });
+    note.content = content;
+    await note.save?.();
+    res.json(note);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const note = await Notes.findOne?.({ _id: id, user: req.user._id });
+    if (!note) return res.status(404).json({ error: 'Note not found' });
+    await Notes.deleteOne?.({ _id: id });
+    res.json({ message: 'Note deleted' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;

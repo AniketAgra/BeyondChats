@@ -39,10 +39,11 @@ async function llmSummarize(text) {
   const maxInput = Number(process.env.SUMMARIZE_MAX_CHARS || 12000);
   const input = (text || '').slice(0, maxInput);
 
-  const fallback = () => input.slice(0, 800) + (input.length > 800 ? '…' : '');
+  // Return full text without truncation
+  const fallback = () => input || 'Summary unavailable.';
 
   if (!apiKey) {
-    // Mock summary in dev without key
+    // Mock summary in dev without key - return full content
     return fallback();
   }
   const prompt = `Summarize the following study material into 5-8 bullet points with key topics and definitions.\n\n${input}`;

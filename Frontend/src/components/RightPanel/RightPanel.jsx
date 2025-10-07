@@ -25,7 +25,7 @@ export default function RightPanel({ pdfId, notePdfId, page, isCollapsed = false
         <div className={styles.scrollArea}>
           <section className={tab==='chat' ? `${styles.section} ${styles.active}` : styles.section}>
             <div className={styles.sectionInner}>
-              <div className={styles.sectionHeader}>Conversation</div>
+              <div className={styles.sectionHeader}>AI Assistant</div>
               <div className={styles.sectionBody}>
                 <ChatPanel pdfId={pdfId} />
               </div>

@@ -1,3 +1,7 @@
+// Simple in-memory cache to reduce API calls
+const videoCache = new Map();
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
 function extractKeywords(text) {
   if (!text) return [];
   const stop = new Set([
@@ -34,6 +38,15 @@ function buildQuery(input) {
 export async function suggestVideos(topic) {
   const key = process.env.YOUTUBE_API_KEY;
   const query = buildQuery(topic) || 'study tutorial';
+  
+  // Check cache first
+  const cacheKey = query.toLowerCase().trim();
+  const cached = videoCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+    console.log('Returning cached YouTube videos for:', cacheKey);
+    return cached.videos;
+  }
+  
   if (!key) {
     // return mock videos for development
     return Array.from({ length: 6 }).map((_, i) => ({
@@ -46,34 +59,65 @@ export async function suggestVideos(topic) {
       relevance: Math.random()
     }));
   }
-  const { default: axios } = await import('axios');
-  const q = encodeURIComponent(query);
-  const params = `part=snippet&type=video&maxResults=6&safeSearch=moderate&relevanceLanguage=en&q=${q}&key=${key}`;
-  const res = await axios.get(
-    `https://www.googleapis.com/youtube/v3/search?${params}`
-  );
-  const items = Array.isArray(res.data?.items) ? res.data.items : [];
-  if (!items.length) {
-    // Fallback to a more generic query
-    const q2 = encodeURIComponent(extractKeywords(topic).slice(0,5).join(' ') || 'study tips');
-    const res2 = await axios.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=6&q=${q2}&key=${key}`);
-    return res2.data.items.map((it) => ({
-      id: it.id.videoId,
-      title: it.snippet.title,
-      channelTitle: it.snippet.channelTitle,
-      duration: '',
-      thumbnail: it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url,
-      url: `https://www.youtube.com/watch?v=${it.id.videoId}`,
-      relevance: 1
-    }));
+  try {
+    const { default: axios } = await import('axios');
+    const q = encodeURIComponent(query);
+    const params = `part=snippet&type=video&maxResults=6&safeSearch=moderate&relevanceLanguage=en&q=${q}&key=${key}`;
+    const res = await axios.get(
+      `https://www.googleapis.com/youtube/v3/search?${params}`
+    );
+    const items = Array.isArray(res.data?.items) ? res.data.items : [];
+    
+    let videos;
+    if (!items.length) {
+      // Fallback to a more generic query
+      const q2 = encodeURIComponent(extractKeywords(topic).slice(0,5).join(' ') || 'study tips');
+      const res2 = await axios.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=6&q=${q2}&key=${key}`);
+      videos = res2.data.items.map((it) => ({
+        id: it.id.videoId,
+        title: it.snippet.title,
+        channelTitle: it.snippet.channelTitle,
+        duration: '',
+        thumbnail: it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url,
+        url: `https://www.youtube.com/watch?v=${it.id.videoId}`,
+        relevance: 1
+      }));
+    } else {
+      videos = items.map((it) => ({
+        id: it.id.videoId,
+        title: it.snippet.title,
+        channelTitle: it.snippet.channelTitle,
+        duration: '',
+        thumbnail: it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url,
+        url: `https://www.youtube.com/watch?v=${it.id.videoId}`,
+        relevance: 1
+      }));
+    }
+    
+    // Cache the results
+    videoCache.set(cacheKey, { videos, timestamp: Date.now() });
+    console.log('Cached YouTube videos for:', cacheKey);
+    
+    return videos;
+  } catch (error) {
+    console.error('YouTube API Error:', error.response?.data || error.message);
+    
+    // If quota exceeded, return cached results or mock data
+    if (error.response?.status === 403 || error.response?.data?.error?.errors?.[0]?.reason === 'quotaExceeded') {
+      console.warn('YouTube API quota exceeded. Returning fallback videos.');
+      
+      // Return generic educational videos as fallback
+      return Array.from({ length: 6 }).map((_, i) => ({
+        id: `fallback-${i}`,
+        title: `${query ? query + ' - ' : ''}Educational Video ${i + 1}`,
+        channelTitle: 'Educational Content',
+        duration: '15:00',
+        thumbnail: `https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg`,
+        url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(query),
+        relevance: Math.random()
+      }));
+    }
+    
+    throw error;
   }
-  return items.map((it) => ({
-    id: it.id.videoId,
-    title: it.snippet.title,
-    channelTitle: it.snippet.channelTitle,
-    duration: '',
-    thumbnail: it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url,
-    url: `https://www.youtube.com/watch?v=${it.id.videoId}`,
-    relevance: 1
-  }));
 }

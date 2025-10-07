@@ -5,12 +5,51 @@ import YouTubeSuggestions from '../YouTubeSuggestions/YouTubeSuggestions.jsx'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
 
-export default function PDFViewer({ file, summary, videos, onSummarize, isFullscreen, onToggleFullscreen }) {
+export default function PDFViewer({ file, summary, videos, onSummarize, isFullscreen, onToggleFullscreen, onPageChange }) {
   const [numPages, setNumPages] = useState(null)
   const [pageNumber, setPageNumber] = useState(1)
   const containerRef = useRef(null)
+  const summaryRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(780)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false)
+  const [showSummary, setShowSummary] = useState(false)
   function onDocumentLoadSuccess({ numPages }) { setNumPages(numPages) }
+
+  // Notify parent component when page changes
+  useEffect(() => {
+    if (onPageChange) {
+      onPageChange(pageNumber)
+    }
+  }, [pageNumber, onPageChange])
+
+  // Update loading state when summary is received
+  useEffect(() => {
+    if (summary && isLoadingSummary) {
+      setIsLoadingSummary(false)
+    }
+  }, [summary])
+
+  const handleSummarize = async () => {
+    setShowSummary(true)
+    setIsLoadingSummary(true)
+    
+    // Scroll to summary section smoothly after a brief delay to let it appear
+    setTimeout(() => {
+      summaryRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      })
+    }, 100)
+    
+    try {
+      await onSummarize()
+    } catch (err) {
+      setIsLoadingSummary(false)
+      setShowSummary(false)
+    }
+  }
 
   // Keep the PDF page width responsive to its container to avoid overflow
   useEffect(() => {
@@ -57,7 +96,13 @@ export default function PDFViewer({ file, summary, videos, onSummarize, isFullsc
             </svg>
           )}
         </button>
-        <button className="btn secondary" onClick={onSummarize}>Summarize PDF</button>
+        <button 
+          className="btn secondary" 
+          onClick={handleSummarize}
+          disabled={isLoadingSummary}
+        >
+          {isLoadingSummary ? 'Generating...' : 'Summarize PDF'}
+        </button>
       </div>
       <div className={`${styles.viewer} ${isFullscreen ? styles.fullscreen : ''}`}>
         {file ? (
@@ -78,10 +123,34 @@ export default function PDFViewer({ file, summary, videos, onSummarize, isFullsc
           <div className="card" style={{ padding: 24 }}>Upload a PDF to begin.</div>
         )}
       </div>
-      {summary && (
-        <div className={styles.summary + ' card'}>
-          <h3>Auto-generated Summary</h3>
-          <div className={styles.summaryText}>{summary}</div>
+      {showSummary && (
+        <div 
+          ref={summaryRef}
+          className={`${styles.summarySection} ${isLoadingSummary ? styles.loading : styles.loaded}`}
+        >
+          {isLoadingSummary ? (
+            <div className={styles.loadingBox + ' card'}>
+              <div className={styles.shimmerLine}></div>
+              <div className={styles.shimmerLine}></div>
+              <div className={styles.shimmerLine}></div>
+              <p className={styles.loadingText}>✨ Generating your summary...</p>
+            </div>
+          ) : summary ? (
+            <div className={styles.summary + ' card'}>
+              <h3>Auto-generated Summary</h3>
+              <div className={`${styles.summaryText} ${isExpanded ? styles.expanded : styles.collapsed}`}>
+                {summary}
+              </div>
+              {summary.length > 300 && (
+                <button 
+                  className={styles.readMoreBtn} 
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  {isExpanded ? 'Show Less' : 'Read More'}
+                </button>
+              )}
+            </div>
+          ) : null}
         </div>
       )}
       {videos?.length ? (

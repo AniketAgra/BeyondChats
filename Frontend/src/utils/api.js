@@ -117,7 +117,9 @@ export const ytApi = {
 
 export const notesApi = {
   list: async (pdfId) => (await api.get('/notes', { params: { pdfId } })).data.items,
-  create: async (note) => (await api.post('/notes', note)).data
+  create: async (note) => (await api.post('/notes', note)).data,
+  update: async (id, note) => (await api.put(`/notes/${id}`, note)).data,
+  delete: async (id) => (await api.delete(`/notes/${id}`)).data
 }
 
 export const quizApi = {

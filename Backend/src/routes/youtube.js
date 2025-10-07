@@ -10,7 +10,21 @@ router.get('/suggest', requireAuth, async (req, res) => {
     const videos = await suggestVideos(topic);
     res.json({ videos });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error('YouTube suggest error:', e.message);
+    // Check if it's a quota error
+    const isQuotaError = e.response?.status === 403 || 
+                         e.response?.data?.error?.errors?.[0]?.reason === 'quotaExceeded' ||
+                         e.message?.includes('quota');
+    
+    if (isQuotaError) {
+      // Return empty array or cached data instead of error
+      res.json({ 
+        videos: [], 
+        warning: 'YouTube API quota exceeded. Videos will be available tomorrow or when quota resets.' 
+      });
+    } else {
+      res.status(500).json({ error: e.message });
+    }
   }
 });
 

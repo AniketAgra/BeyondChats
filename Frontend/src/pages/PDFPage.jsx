@@ -16,6 +16,7 @@ export default function PDFPage() {
   const [keyPoints, setKeyPoints] = useState([])
   const [keyFeaturesStatus, setKeyFeaturesStatus] = useState('loading')
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     (async () => {
@@ -80,10 +81,12 @@ export default function PDFPage() {
       const { summary } = await pdfApi.summarize({ file: state?.file, pdfId: docMeta?.id })
       console.log('Summary received:', summary)
       setSummary(summary)
+      return summary
     } catch (err) {
       console.error('Summarize failed', err)
       const msg = err?.response?.data?.error || err?.message || 'Failed to summarize'
       alert(msg)
+      throw err
     }
   }
 
@@ -120,10 +123,11 @@ export default function PDFPage() {
           onSummarize={onSummarize}
           isFullscreen={isFullscreen}
           onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+          onPageChange={setCurrentPage}
         />
         <FloatingAIBuddy isPDFPage={true} />
       </div>
-      <RightPanel pdfId={id} notePdfId={docMeta?.id} page={1} isCollapsed={isFullscreen} />
+      <RightPanel pdfId={id} notePdfId={docMeta?.id} page={currentPage} isCollapsed={isFullscreen} />
     </div>
   )
 }
