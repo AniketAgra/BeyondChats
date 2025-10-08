@@ -152,6 +152,10 @@ export const chatApi = {
 
 export const analyticsApi = {
   overview: async () => (await api.get('/analytics/overview')).data,
+  topicMastery: async () => (await api.get('/analytics/topic-mastery')).data,
+  pdfInsights: async () => (await api.get('/analytics/pdf-insights')).data,
+  timeSpent: async () => (await api.get('/analytics/time-spent')).data,
+  recommendations: async () => (await api.get('/analytics/recommendations')).data,
 }
 
 export const keyFeaturesApi = {

@@ -5,8 +5,9 @@ export default function OverviewCards({ data }) {
   if (!data) return null
 
   const { overview, topPdf, topTopics, weakTopics } = data
+  const learningLevel = overview.learningLevel
 
-  const cards = [
+  const mainCards = [
     {
       title: 'Total Study Hours',
       value: overview.totalStudyHours,
@@ -14,14 +15,6 @@ export default function OverviewCards({ data }) {
       icon: '🕓',
       gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       description: `${overview.totalQuizzes} quizzes completed`
-    },
-    {
-      title: 'Top Coursebook',
-      value: topPdf?.title || 'No data yet',
-      subtitle: topPdf ? `${topPdf.attempts} attempts • ${topPdf.avgScore}% avg` : 'Start studying!',
-      icon: '📚',
-      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      compact: true
     },
     {
       title: 'Average Score',
@@ -40,41 +33,23 @@ export default function OverviewCards({ data }) {
       description: overview.streak > 0 ? 'Keep it up!' : 'Start today!'
     },
     {
-      title: 'Learning Level',
-      value: overview.learningLevel.level,
-      icon: overview.learningLevel.icon,
-      gradient: `linear-gradient(135deg, ${overview.learningLevel.color} 0%, ${overview.learningLevel.color}dd 100%)`,
-      description: `Based on ${overview.totalQuizzes} quizzes`,
-      badge: true
-    },
-    {
-      title: 'Top Topics',
-      value: topTopics.length > 0 ? topTopics[0].topic : 'No data',
-      subtitle: topTopics.length > 0 ? `${topTopics[0].avgScore}% mastery` : 'Complete quizzes first',
-      icon: '🧩',
-      gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-      list: topTopics.slice(1, 3).map(t => `${t.topic} (${t.avgScore}%)`),
+      title: 'Top Coursebook',
+      value: topPdf?.title || 'No data yet',
+      subtitle: topPdf ? `${topPdf.attempts} attempts • ${topPdf.avgScore}% avg` : 'Start studying!',
+      icon: '📚',
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
       compact: true
-    },
-    {
-      title: 'Weak Topics',
-      value: weakTopics.length > 0 ? weakTopics[0].topic : 'None found',
-      subtitle: weakTopics.length > 0 ? `${weakTopics[0].avgScore}% - needs practice` : 'All topics strong! 💪',
-      icon: '⚡',
-      gradient: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-      list: weakTopics.slice(1, 3).map(t => `${t.topic} (${t.avgScore}%)`),
-      compact: true,
-      alert: weakTopics.length > 0
     }
   ]
 
   return (
     <div className={styles.container}>
-      <div className={styles.grid}>
-        {cards.map((card, idx) => (
+      {/* Main Stats Grid */}
+      <div className={styles.mainGrid}>
+        {mainCards.map((card, idx) => (
           <div 
             key={idx} 
-            className={`${styles.card} ${card.compact ? styles.compact : ''} ${card.alert ? styles.alert : ''}`}
+            className={`${styles.card} ${card.compact ? styles.compact : ''}`}
           >
             <div className={styles.cardHeader}>
               <div className={styles.iconWrapper} style={{ background: card.gradient }}>
@@ -85,14 +60,8 @@ export default function OverviewCards({ data }) {
             
             <div className={styles.cardBody}>
               <div className={styles.mainValue}>
-                {card.badge ? (
-                  <span className={styles.badge}>{card.value}</span>
-                ) : (
-                  <>
-                    <span className={styles.value}>{card.value}</span>
-                    {card.unit && <span className={styles.unit}>{card.unit}</span>}
-                  </>
-                )}
+                <span className={styles.value}>{card.value}</span>
+                {card.unit && <span className={styles.unit}>{card.unit}</span>}
               </div>
               
               {card.subtitle && (
@@ -102,17 +71,120 @@ export default function OverviewCards({ data }) {
               {card.description && (
                 <p className={styles.description}>{card.description}</p>
               )}
-              
-              {card.list && card.list.length > 0 && (
-                <ul className={styles.list}>
-                  {card.list.map((item, i) => (
-                    <li key={i}>{item}</li>
-                  ))}
-                </ul>
-              )}
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Learning Level Badge - Prominent Display */}
+      <div className={styles.levelBadgeCard}>
+        <div className={styles.levelHeader}>
+          <h3 className={styles.levelTitle}>Learning Level</h3>
+          <span className={styles.levelQuizCount}>{overview.totalQuizzes} quizzes completed</span>
+        </div>
+        
+        <div className={styles.levelBadgeWrapper}>
+          <div 
+            className={styles.levelBadge}
+            style={{ background: learningLevel.gradient }}
+          >
+            <div className={styles.badgeIcon}>{learningLevel.icon}</div>
+            <div className={styles.badgeContent}>
+              <div className={styles.badgeName}>{learningLevel.level}</div>
+              <div className={styles.badgeTier}>Tier {learningLevel.tier}</div>
+            </div>
+          </div>
+          <p className={styles.levelDescription}>{learningLevel.description}</p>
+        </div>
+        
+        <div className={styles.levelProgress}>
+          <div className={styles.progressInfo}>
+            <span className={styles.progressLabel}>Progress to next level</span>
+            <span className={styles.progressValue}>
+              {overview.totalQuizzes % 10} / 10 quizzes
+            </span>
+          </div>
+          <div className={styles.progressBar}>
+            <div 
+              className={styles.progressFill}
+              style={{ 
+                width: `${(overview.totalQuizzes % 10) * 10}%`,
+                background: learningLevel.gradient
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Topics Grid */}
+      <div className={styles.topicsGrid}>
+        {/* Top Topics */}
+        <div className={styles.topicCard}>
+          <div className={styles.topicHeader}>
+            <div className={styles.topicIconWrapper}>
+              <span className={styles.topicIcon}>🧩</span>
+            </div>
+            <h3 className={styles.topicTitle}>Top Topics</h3>
+          </div>
+          
+          {topTopics.length > 0 ? (
+            <div className={styles.topicList}>
+              {topTopics.slice(0, 3).map((topic, idx) => (
+                <div key={idx} className={styles.topicItem}>
+                  <div className={styles.topicRank}>{idx + 1}</div>
+                  <div className={styles.topicInfo}>
+                    <span className={styles.topicName}>{topic.topic}</span>
+                    <span className={styles.topicMeta}>{topic.attempts} attempts</span>
+                  </div>
+                  <div className={styles.topicScore}>
+                    <span className={styles.scoreValue}>{topic.avgScore}%</span>
+                    <div className={styles.scoreBadge} style={{ background: '#10b981' }}>
+                      Strong
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className={styles.emptyTopics}>Complete quizzes to see your top topics</p>
+          )}
+        </div>
+
+        {/* Weak Topics */}
+        <div className={`${styles.topicCard} ${weakTopics.length > 0 ? styles.weakCard : ''}`}>
+          <div className={styles.topicHeader}>
+            <div className={styles.topicIconWrapper}>
+              <span className={styles.topicIcon}>⚡</span>
+            </div>
+            <h3 className={styles.topicTitle}>Topics to Practice</h3>
+          </div>
+          
+          {weakTopics.length > 0 ? (
+            <div className={styles.topicList}>
+              {weakTopics.slice(0, 3).map((topic, idx) => (
+                <div key={idx} className={styles.topicItem}>
+                  <div className={`${styles.topicRank} ${styles.weakRank}`}>!</div>
+                  <div className={styles.topicInfo}>
+                    <span className={styles.topicName}>{topic.topic}</span>
+                    <span className={styles.topicMeta}>{topic.attempts} attempts</span>
+                  </div>
+                  <div className={styles.topicScore}>
+                    <span className={styles.scoreValue}>{topic.avgScore}%</span>
+                    <div className={styles.scoreBadge} style={{ background: '#ef4444' }}>
+                      Practice
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.strongPerformance}>
+              <div className={styles.strongIcon}>💪</div>
+              <p className={styles.strongText}>All topics are strong!</p>
+              <p className={styles.strongSubtext}>Keep up the excellent work</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

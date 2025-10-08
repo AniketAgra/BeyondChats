@@ -12,7 +12,8 @@ const QuizSchema = new Schema(
       type: Array, 
       required: true,
       default: []
-      // Each question has: { question, options?, answerIndex?, answer?, keywords?, explanation, type }
+      // Each question has: { question, options?, answerIndex?, answer?, keywords?, explanation, type, topics? }
+      // topics: array of topic strings that this question relates to
     },
     totalQuestions: { type: Number, required: true },
     createdBy: { type: Types.ObjectId, ref: 'User', required: true, index: true },

@@ -3,6 +3,7 @@ import { generateQuiz, submitQuiz } from '../services/quizService.js';
 import QuizAttempt from '../schemas/QuizAttempt.js'
 import Quiz from '../schemas/Quiz.js'
 import Pdf from '../schemas/Pdf.js'
+import TopicPerformance from '../schemas/TopicPerformance.js'
 import { requireAuth } from '../middlewares/auth.js'
 
 const router = Router();
@@ -64,7 +65,8 @@ router.post('/generate', requireAuth, async (req, res) => {
       difficulty, 
       types, 
       topic,
-      count 
+      count,
+      userId: req.user._id
     });
     
     // Save the quiz to database for future reattempts
@@ -116,6 +118,42 @@ router.post('/submit', requireAuth, async (req, res) => {
     }
     
     const attempt = await QuizAttempt.create(attemptData)
+    
+    // Update topic performance if pdfId is provided
+    if (pdfId) {
+      try {
+        // Track performance for each question's topics
+        for (let i = 0; i < questions.length; i++) {
+          const question = questions[i];
+          const resultItem = result.results[i];
+          
+          if (question.topics && Array.isArray(question.topics)) {
+            // Update performance for each topic associated with this question
+            for (const topicName of question.topics) {
+              let topicPerf = await TopicPerformance.findOne({
+                user: req.user._id,
+                pdf: pdfId,
+                topic: topicName
+              });
+              
+              if (!topicPerf) {
+                topicPerf = new TopicPerformance({
+                  user: req.user._id,
+                  pdf: pdfId,
+                  topic: topicName
+                });
+              }
+              
+              topicPerf.updatePerformance(resultItem.isCorrect, question.id);
+              await topicPerf.save();
+            }
+          }
+        }
+      } catch (topicError) {
+        console.error('Failed to update topic performance:', topicError);
+        // Continue even if topic tracking fails
+      }
+    }
     
     res.json({ ...result, attemptId: attempt._id });
   } catch (e) {

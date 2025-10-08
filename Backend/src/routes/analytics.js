@@ -2,6 +2,8 @@ import { Router } from 'express'
 import { requireAuth } from '../middlewares/auth.js'
 import QuizAttempt from '../schemas/QuizAttempt.js'
 import Pdf from '../schemas/Pdf.js'
+import TopicPerformance from '../schemas/TopicPerformance.js'
+import Topic from '../schemas/Topic.js'
 import mongoose from 'mongoose'
 
 const router = Router()
@@ -31,13 +33,89 @@ const calculateStreak = (attempts) => {
   return streak
 }
 
-// Helper function to calculate learning level
+// Helper function to calculate learning level (CoC style)
 const getLearningLevel = (totalAttempts, avgScore) => {
-  if (totalAttempts < 5) return { level: 'Explorer', icon: '🌱', color: '#10b981' }
-  if (totalAttempts < 15) return { level: 'Learner', icon: '📚', color: '#3b82f6' }
-  if (totalAttempts < 30 || avgScore < 70) return { level: 'Scholar', icon: '🎓', color: '#8b5cf6' }
-  if (avgScore < 85) return { level: 'Expert', icon: '⭐', color: '#f59e0b' }
-  return { level: 'Master', icon: '🏆', color: '#ef4444' }
+  // Bronze - Beginner (0-9 quizzes, any score)
+  if (totalAttempts < 10) {
+    return { 
+      level: 'Bronze', 
+      tier: 'I',
+      icon: '🥉', 
+      color: '#cd7f32',
+      gradient: 'linear-gradient(135deg, #cd7f32 0%, #a0522d 100%)',
+      description: 'Just getting started'
+    }
+  }
+  
+  // Silver - Intermediate (10-24 quizzes, improving)
+  if (totalAttempts < 25) {
+    return { 
+      level: 'Silver', 
+      tier: avgScore >= 60 ? 'II' : 'I',
+      icon: '🥈', 
+      color: '#c0c0c0',
+      gradient: 'linear-gradient(135deg, #e8e8e8 0%, #a8a8a8 100%)',
+      description: 'Building momentum'
+    }
+  }
+  
+  // Gold - Proficient (25-49 quizzes, good performance)
+  if (totalAttempts < 50) {
+    return { 
+      level: 'Gold', 
+      tier: avgScore >= 75 ? 'III' : avgScore >= 60 ? 'II' : 'I',
+      icon: '🥇', 
+      color: '#ffd700',
+      gradient: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
+      description: 'Strong performance'
+    }
+  }
+  
+  // Platinum - Advanced (50-99 quizzes, excellent)
+  if (totalAttempts < 100) {
+    return { 
+      level: 'Platinum', 
+      tier: avgScore >= 85 ? 'III' : avgScore >= 70 ? 'II' : 'I',
+      icon: '💎', 
+      color: '#e5e4e2',
+      gradient: 'linear-gradient(135deg, #e5e4e2 0%, #b0c4de 100%)',
+      description: 'Exceptional learner'
+    }
+  }
+  
+  // Diamond - Elite (100+ quizzes, mastery level)
+  if (avgScore >= 90) {
+    return { 
+      level: 'Diamond', 
+      tier: 'III',
+      icon: '💠', 
+      color: '#b9f2ff',
+      gradient: 'linear-gradient(135deg, #b9f2ff 0%, #00bfff 100%)',
+      description: 'Elite performer'
+    }
+  }
+  
+  // Champion - Master (100+ quizzes, 85-89%)
+  if (avgScore >= 85) {
+    return { 
+      level: 'Champion', 
+      tier: 'II',
+      icon: '🏆', 
+      color: '#ff6b6b',
+      gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+      description: 'Champion level'
+    }
+  }
+  
+  // Master - Ultimate (100+ quizzes, 80-84%)
+  return { 
+    level: 'Master', 
+    tier: 'I',
+    icon: '👑', 
+    color: '#9b59b6',
+    gradient: 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)',
+    description: 'Dedicated master'
+  }
 }
 
 // Main overview endpoint with all dashboard metrics
@@ -143,6 +221,71 @@ router.get('/overview', requireAuth, async (req, res) => {
       timeTaken: '8m' // Placeholder
     }))
     
+    // Get topic-based performance insights
+    let topicInsights = {
+      weakTopicsByPdf: [],
+      strongTopicsByPdf: [],
+      overallWeakTopics: [],
+      overallStrongTopics: []
+    }
+    
+    try {
+      const topicPerformances = await TopicPerformance.find({ user: userId })
+        .populate('pdf', 'title')
+        .sort({ accuracy: 1 })
+        .lean()
+      
+      if (topicPerformances.length > 0) {
+        // Aggregate topics across all PDFs
+        const topicAggregation = {}
+        topicPerformances.forEach(p => {
+          if (!topicAggregation[p.topic]) {
+            topicAggregation[p.topic] = {
+              topic: p.topic,
+              totalQuestions: 0,
+              correctAnswers: 0,
+              pdfs: []
+            }
+          }
+          topicAggregation[p.topic].totalQuestions += p.totalQuestions
+          topicAggregation[p.topic].correctAnswers += p.correctAnswers
+          if (p.pdf) {
+            topicAggregation[p.topic].pdfs.push(p.pdf.title || 'Untitled')
+          }
+        })
+        
+        const aggregatedTopics = Object.values(topicAggregation).map(t => ({
+          ...t,
+          accuracy: t.totalQuestions > 0 
+            ? Math.round((t.correctAnswers / t.totalQuestions) * 100) 
+            : 0
+        }))
+        
+        topicInsights.overallWeakTopics = aggregatedTopics
+          .filter(t => t.accuracy < 60 && t.totalQuestions > 0)
+          .slice(0, 5)
+          .map(t => ({
+            topic: t.topic,
+            accuracy: t.accuracy,
+            totalQuestions: t.totalQuestions,
+            pdfs: [...new Set(t.pdfs)]
+          }))
+        
+        topicInsights.overallStrongTopics = aggregatedTopics
+          .filter(t => t.accuracy >= 80)
+          .sort((a, b) => b.accuracy - a.accuracy)
+          .slice(0, 5)
+          .map(t => ({
+            topic: t.topic,
+            accuracy: t.accuracy,
+            totalQuestions: t.totalQuestions,
+            pdfs: [...new Set(t.pdfs)]
+          }))
+      }
+    } catch (topicError) {
+      console.error('Failed to get topic insights:', topicError)
+    }
+    
     res.json({
       overview: {
         totalStudyHours,
@@ -155,7 +298,8 @@ router.get('/overview', requireAuth, async (req, res) => {
       topTopics,
       weakTopics,
       performanceTrend,
-      recentActivity
+      recentActivity,
+      topicInsights
     })
   } catch (e) {
     console.error('Analytics overview error:', e)

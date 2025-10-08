@@ -1,4 +1,6 @@
 import dotenv from 'dotenv'
+import { generateQuestionsTopicsBatch } from './topicService.js'
+import Topic from '../schemas/Topic.js'
 dotenv.config()
 
 // LLM Client Setup
@@ -44,7 +46,7 @@ async function getClient() {
   return llmClientPromise;
 }
 
-export async function generateQuiz({ text, pdfId, difficulty = 'medium', types = ['MCQ'], topic, count = 10 }) {
+export async function generateQuiz({ text, pdfId, difficulty = 'medium', types = ['MCQ'], topic, count = 10, userId }) {
   const client = await getClient();
   
   if (!client || !text) {
@@ -63,11 +65,35 @@ export async function generateQuiz({ text, pdfId, difficulty = 'medium', types =
       allQuestions.push(...questions);
     }
 
+    const finalQuestions = allQuestions.slice(0, count);
+
+    // Assign topics to each question if pdfId is provided
+    if (pdfId && userId) {
+      try {
+        // Get topics for this PDF
+        const topicDoc = await Topic.findOne({ user: userId, pdf: pdfId });
+        
+        if (topicDoc && topicDoc.subtopics && topicDoc.subtopics.length > 0) {
+          // Generate topics for all questions in batch
+          const availableTopics = topicDoc.subtopics;
+          const questionTopics = await generateQuestionsTopicsBatch(finalQuestions, availableTopics);
+          
+          // Assign topics to each question
+          finalQuestions.forEach((q, idx) => {
+            q.topics = questionTopics[idx] || [availableTopics[0] || 'General'];
+          });
+        }
+      } catch (topicError) {
+        console.error('Failed to assign topics to questions:', topicError);
+        // Continue without topics if there's an error
+      }
+    }
+
     return {
       difficulty,
       types,
       topic: topic || 'General',
-      questions: allQuestions.slice(0, count)
+      questions: finalQuestions
     };
   } catch (error) {
     console.error('Quiz generation error:', error);
