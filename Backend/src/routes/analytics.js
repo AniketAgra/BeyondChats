@@ -2,8 +2,6 @@ import { Router } from 'express'
 import { requireAuth } from '../middlewares/auth.js'
 import QuizAttempt from '../schemas/QuizAttempt.js'
 import Pdf from '../schemas/Pdf.js'
-import TopicPerformance from '../schemas/TopicPerformance.js'
-import Topic from '../schemas/Topic.js'
 import mongoose from 'mongoose'
 
 const router = Router()
@@ -193,12 +191,16 @@ router.get('/overview', requireAuth, async (req, res) => {
     })
     
     const topicMastery = Object.entries(topicStats)
-      .map(([topic, data]) => ({
-        topic,
-        attempts: data.total,
-        avgScore: (data.scores.reduce((a, b) => a + b, 0) / data.scores.length).toFixed(1),
-        accuracy: (data.scores.reduce((a, b) => a + b, 0) / data.scores.length).toFixed(1)
-      }))
+      .map(([topic, data]) => {
+        const avgScore = parseFloat((data.scores.reduce((a, b) => a + b, 0) / data.scores.length).toFixed(1))
+        return {
+          topic,
+          attempts: data.total,
+          avgScore: avgScore.toFixed(1),
+          accuracy: avgScore.toFixed(1),
+          level: avgScore >= 80 ? 'strong' : avgScore >= 60 ? 'moderate' : 'weak'
+        }
+      })
       .sort((a, b) => parseFloat(b.avgScore) - parseFloat(a.avgScore))
     
     const topTopics = topicMastery.slice(0, 3)
@@ -221,67 +223,62 @@ router.get('/overview', requireAuth, async (req, res) => {
       timeTaken: '8m' // Placeholder
     }))
     
-    // Get topic-based performance insights
+    // Get topic-based performance insights from quiz attempts directly
     let topicInsights = {
-      weakTopicsByPdf: [],
-      strongTopicsByPdf: [],
       overallWeakTopics: [],
       overallStrongTopics: []
     }
     
     try {
-      const topicPerformances = await TopicPerformance.find({ user: userId })
-        .populate('pdf', 'title')
-        .sort({ accuracy: 1 })
-        .lean()
+      // Calculate topic performance from quiz attempts
+      const topicAggregation = {}
       
-      if (topicPerformances.length > 0) {
-        // Aggregate topics across all PDFs
-        const topicAggregation = {}
-        topicPerformances.forEach(p => {
-          if (!topicAggregation[p.topic]) {
-            topicAggregation[p.topic] = {
-              topic: p.topic,
-              totalQuestions: 0,
+      allAttempts.forEach(attempt => {
+        if (attempt.topic) {
+          if (!topicAggregation[attempt.topic]) {
+            topicAggregation[attempt.topic] = {
+              topic: attempt.topic,
+              totalAttempts: 0,
+              totalScore: 0,
               correctAnswers: 0,
-              pdfs: []
+              totalQuestions: 0
             }
           }
-          topicAggregation[p.topic].totalQuestions += p.totalQuestions
-          topicAggregation[p.topic].correctAnswers += p.correctAnswers
-          if (p.pdf) {
-            topicAggregation[p.topic].pdfs.push(p.pdf.title || 'Untitled')
-          }
-        })
-        
-        const aggregatedTopics = Object.values(topicAggregation).map(t => ({
-          ...t,
-          accuracy: t.totalQuestions > 0 
-            ? Math.round((t.correctAnswers / t.totalQuestions) * 100) 
-            : 0
+          topicAggregation[attempt.topic].totalAttempts++
+          topicAggregation[attempt.topic].totalScore += (attempt.score || 0)
+          topicAggregation[attempt.topic].correctAnswers += (attempt.correct || 0)
+          topicAggregation[attempt.topic].totalQuestions += (attempt.total || 0)
+        }
+      })
+      
+      const aggregatedTopics = Object.values(topicAggregation).map(t => ({
+        ...t,
+        accuracy: t.totalAttempts > 0 
+          ? Math.round(t.totalScore / t.totalAttempts) 
+          : 0
+      }))
+      
+      topicInsights.overallWeakTopics = aggregatedTopics
+        .filter(t => t.accuracy < 60 && t.totalAttempts > 0)
+        .sort((a, b) => a.accuracy - b.accuracy)
+        .slice(0, 5)
+        .map(t => ({
+          topic: t.topic,
+          accuracy: t.accuracy,
+          totalQuestions: t.totalQuestions,
+          attempts: t.totalAttempts
         }))
-        
-        topicInsights.overallWeakTopics = aggregatedTopics
-          .filter(t => t.accuracy < 60 && t.totalQuestions > 0)
-          .slice(0, 5)
-          .map(t => ({
-            topic: t.topic,
-            accuracy: t.accuracy,
-            totalQuestions: t.totalQuestions,
-            pdfs: [...new Set(t.pdfs)]
-          }))
-        
-        topicInsights.overallStrongTopics = aggregatedTopics
-          .filter(t => t.accuracy >= 80)
-          .sort((a, b) => b.accuracy - a.accuracy)
-          .slice(0, 5)
-          .map(t => ({
-            topic: t.topic,
-            accuracy: t.accuracy,
-            totalQuestions: t.totalQuestions,
-            pdfs: [...new Set(t.pdfs)]
-          }))
-      }
+      
+      topicInsights.overallStrongTopics = aggregatedTopics
+        .filter(t => t.accuracy >= 80)
+        .sort((a, b) => b.accuracy - a.accuracy)
+        .slice(0, 5)
+        .map(t => ({
+          topic: t.topic,
+          accuracy: t.accuracy,
+          totalQuestions: t.totalQuestions,
+          attempts: t.totalAttempts
+        }))
     } catch (topicError) {
       console.error('Failed to get topic insights:', topicError)
     }

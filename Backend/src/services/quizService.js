@@ -1,6 +1,4 @@
 import dotenv from 'dotenv'
-import { generateQuestionsTopicsBatch } from './topicService.js'
-import Topic from '../schemas/Topic.js'
 dotenv.config()
 
 // LLM Client Setup
@@ -46,6 +44,34 @@ async function getClient() {
   return llmClientPromise;
 }
 
+// Function to generate a topic name using AI from the content
+async function generateTopicFromContent(text, client) {
+  if (!client || !text) {
+    return 'General';
+  }
+  
+  try {
+    const prompt = `Based on the following content, generate a concise topic name (2-5 words) that best describes the main subject or theme. 
+Return ONLY the topic name, nothing else.
+
+Content:
+${text.substring(0, 1500)}
+
+Topic name:`;
+
+    const response = await client.generate({ prompt });
+    const generatedTopic = response.text.trim()
+      .replace(/^["']|["']$/g, '') // Remove quotes if any
+      .replace(/\n.*/g, '') // Take only first line
+      .substring(0, 100); // Limit length
+    
+    return generatedTopic || 'General';
+  } catch (error) {
+    console.error('Failed to generate topic:', error);
+    return 'General';
+  }
+}
+
 export async function generateQuiz({ text, pdfId, difficulty = 'medium', types = ['MCQ'], topic, count = 10, userId }) {
   const client = await getClient();
   
@@ -55,11 +81,18 @@ export async function generateQuiz({ text, pdfId, difficulty = 'medium', types =
   }
 
   try {
+    // Generate topic from content if not provided
+    let quizTopic = topic;
+    if (!quizTopic && text) {
+      quizTopic = await generateTopicFromContent(text, client);
+      console.log('AI-generated topic:', quizTopic);
+    }
+    
     const questionsPerType = Math.ceil(count / types.length);
     const allQuestions = [];
 
     for (const type of types) {
-      const prompt = buildPrompt(type, text, difficulty, topic, questionsPerType);
+      const prompt = buildPrompt(type, text, difficulty, quizTopic, questionsPerType);
       const response = await client.generate({ prompt });
       const questions = parseQuestions(response.text, type);
       allQuestions.push(...questions);
@@ -67,32 +100,10 @@ export async function generateQuiz({ text, pdfId, difficulty = 'medium', types =
 
     const finalQuestions = allQuestions.slice(0, count);
 
-    // Assign topics to each question if pdfId is provided
-    if (pdfId && userId) {
-      try {
-        // Get topics for this PDF
-        const topicDoc = await Topic.findOne({ user: userId, pdf: pdfId });
-        
-        if (topicDoc && topicDoc.subtopics && topicDoc.subtopics.length > 0) {
-          // Generate topics for all questions in batch
-          const availableTopics = topicDoc.subtopics;
-          const questionTopics = await generateQuestionsTopicsBatch(finalQuestions, availableTopics);
-          
-          // Assign topics to each question
-          finalQuestions.forEach((q, idx) => {
-            q.topics = questionTopics[idx] || [availableTopics[0] || 'General'];
-          });
-        }
-      } catch (topicError) {
-        console.error('Failed to assign topics to questions:', topicError);
-        // Continue without topics if there's an error
-      }
-    }
-
     return {
       difficulty,
       types,
-      topic: topic || 'General',
+      topic: quizTopic || 'General',
       questions: finalQuestions
     };
   } catch (error) {

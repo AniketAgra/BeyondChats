@@ -4,9 +4,7 @@ import pdf from 'pdf-parse/lib/pdf-parse.js'
 import { requireAuth } from '../middlewares/auth.js'
 import Pdf from '../schemas/Pdf.js'
 import KeyFeatures from '../schemas/KeyFeatures.js'
-import Topic from '../schemas/Topic.js'
 import { generateChaptersFromText, generateSummary, generateKeyPoints } from '../services/chapters.service.js'
-import { generateTopicsFromText } from '../services/topicService.js'
 import { upload as memoryUpload } from '../middlewares/upload.js'
 import axios from 'axios'
 import mime from 'mime-types'
@@ -109,10 +107,7 @@ router.post('/upload', requireAuth, localUpload.single('pdf'), async (req, res) 
 			console.error('Background key features generation failed:', err)
 		})
 
-		// 6) Start async topic generation (don't wait)
-		generateTopicsAsync(pdfText, req.user._id, doc._id, doc.title).catch(err => {
-			console.error('Background topic generation failed:', err)
-		})
+		// Note: Topic generation removed - topics are now generated per quiz using AI
 
 		return res.status(201).json({ success: true, pdf: doc })
 	} catch (e) {
@@ -200,10 +195,7 @@ router.post('/from-url', requireAuth, async (req, res) => {
 				console.error('Background key features generation failed:', err)
 			})
 			
-			// 6) Start async topic generation
-			generateTopicsAsync(pdfText, req.user._id, doc._id, doc.title).catch(err => {
-				console.error('Background topic generation failed:', err)
-			})
+			// Note: Topic generation removed - topics are now generated per quiz using AI
 		}
 
 		return res.status(201).json({ success: true, pdf: doc })
@@ -320,42 +312,7 @@ async function generateKeyFeaturesAsync(pdfText, userId, pdfId) {
 	}
 }
 
-// Helper function to generate topics asynchronously
-async function generateTopicsAsync(pdfText, userId, pdfId, pdfTitle) {
-	try {
-		// Create pending topic document
-		await Topic.create({
-			user: userId,
-			pdf: pdfId,
-			mainTopic: '',
-			subtopics: [],
-			status: 'generating'
-		}).catch(() => {}) // Ignore if already exists
-
-		// Generate topics
-		const { mainTopic, subtopics } = await generateTopicsFromText(pdfText, pdfTitle)
-
-		// Update with results
-		await Topic.findOneAndUpdate(
-			{ user: userId, pdf: pdfId },
-			{ 
-				mainTopic,
-				subtopics,
-				status: 'completed',
-				confidence: 1
-			},
-			{ upsert: true }
-		)
-
-		console.log(`Topics generated for PDF ${pdfId}: ${mainTopic}`)
-	} catch (error) {
-		console.error('Topic generation error:', error)
-		await Topic.findOneAndUpdate(
-			{ user: userId, pdf: pdfId },
-			{ status: 'failed' },
-			{ upsert: true }
-		).catch(() => {})
-	}
-}
+// Topic generation removed - topics are now auto-generated per quiz using AI
+// This simplifies the system by removing the need for separate topic tracking
 
 export default router
