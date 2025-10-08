@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, Cell 
@@ -6,6 +6,9 @@ import {
 import styles from './LearningAnalytics.module.css'
 
 export default function LearningAnalytics({ performanceTrend, topicMastery, timeSpent }) {
+  // Local UI state for hover effects on bar chart
+  const [hoveredBar, setHoveredBar] = useState(null)
+
   // Custom tooltip for charts
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -13,8 +16,24 @@ export default function LearningAnalytics({ performanceTrend, topicMastery, time
         <div className={styles.tooltip}>
           <p className={styles.tooltipLabel}>{label}</p>
           <p className={styles.tooltipValue}>
-            {payload[0].name}: <strong>{payload[0].value}</strong>
-            {payload[0].unit || ''}
+            {`${payload[0].name?.charAt(0).toUpperCase()}${payload[0].name?.slice(1)}`}: <strong>{payload[0].value}</strong>
+            {payload[0].name === 'minutes' ? ' min' : (payload[0].unit || '')}
+          </p>
+        </div>
+      )
+    }
+    return null
+  }
+
+  // More polished tooltip specifically for Time Spent (purple accent and nicer copy)
+  const TimeTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const value = payload[0].value
+      return (
+        <div className={styles.tooltip}>
+          <p className={styles.tooltipLabel}>{label}</p>
+          <p className={styles.tooltipValue}>
+            Minutes: <strong style={{ color: '#a78bfa' }}>{value}</strong>
           </p>
         </div>
       )
@@ -146,10 +165,21 @@ export default function LearningAnalytics({ performanceTrend, topicMastery, time
                     style={{ fontSize: '12px' }}
                     label={{ value: 'Minutes', angle: -90, position: 'insideLeft' }}
                   />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="minutes" radius={[8, 8, 0, 0]}>
+                  <Tooltip 
+                    content={<TimeTooltip />} 
+                    cursor={{ fill: 'rgba(139, 92, 246, 0.08)' }} 
+                  />
+                  <Bar 
+                    dataKey="minutes" 
+                    radius={[8, 8, 0, 0]}
+                    onMouseLeave={() => setHoveredBar(null)}
+                  >
                     {timeSpent.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill="#8b5cf6" />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        onMouseEnter={() => setHoveredBar(index)}
+                        fill={hoveredBar === index ? '#a78bfa' : '#8b5cf6'}
+                      />
                     ))}
                   </Bar>
                 </BarChart>

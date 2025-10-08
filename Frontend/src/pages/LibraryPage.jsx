@@ -113,6 +113,8 @@ export default function LibraryPage() {
     try {
       await pdfApi.delete(selected.id)
       setOpenDelete(false)
+      // Reset selectedId to null before reloading
+      setSelectedId(null)
       // Reload the list without the deleted PDF
       await loadList()
     } catch (e) {
@@ -183,6 +185,12 @@ export default function LibraryPage() {
                 <button className={styles.open} onClick={() => setOpenUpload(true)}>Upload PDF</button>
               </div>
             </div>
+          ) : !selected ? (
+            <div className={styles.empty}>
+              <div className={styles.emptyIcon}>📄</div>
+              <div className={styles.emptyTitle}>Select a PDF</div>
+              <div className={styles.emptySubtitle}>Choose a PDF from the library to view its details.</div>
+            </div>
           ) : (
             <div className={styles.previewBody}>
               <div className={styles.cover}>
@@ -248,7 +256,7 @@ export default function LibraryPage() {
                 <div className={styles.actions}>
                   <button className={styles.deleteBtn} onClick={handleDeleteClick} title="Delete PDF and all related data">
                     <RiDeleteBin6Line className={styles.deleteIcon} />
-                    Delete
+                    <span>Delete</span>
                   </button>
                   <button className={styles.open} onClick={() => nav(`/pdf/${selected?.id}`, { state: selected })}>Open in Viewer</button>
                 </div>
