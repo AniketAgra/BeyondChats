@@ -2,33 +2,61 @@ import React, { useState, useEffect } from 'react'
 import styles from './Quiz.module.css'
 import { quizApi, pdfApi } from '../../utils/api.js'
 
-export default function QuizGenerator({ onStart, pdfId }) {
+export default function QuizGenerator({ onStart, pdfId, reuseQuizId }) {
   const [difficulty, setDifficulty] = useState('medium')
   const [topic, setTopic] = useState('')
   const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
   const [questionTypes, setQuestionTypes] = useState({ MCQ: true, SAQ: false, LAQ: false })
   const [questionCount, setQuestionCount] = useState(10)
-  const [pdfs, setPdfs] = useState([])
-  const [selectedPdf, setSelectedPdf] = useState(pdfId || '')
   const [selectedPdfTitle, setSelectedPdfTitle] = useState('')
 
   useEffect(() => {
-    // Only load PDFs if we're in custom mode (no pdfId provided)
-    if (!pdfId) {
-      loadPdfs()
-    } else {
-      // If pdfId is provided, fetch just that PDF's title
+    // If reuseQuizId is provided, load that quiz immediately and start it
+    if (reuseQuizId) {
+      loadExistingQuizAndStart(reuseQuizId)
+    } else if (pdfId) {
+      // If pdfId is provided, fetch that PDF's title
       loadPdfTitle(pdfId)
     }
-  }, [pdfId])
+  }, [pdfId, reuseQuizId])
 
-  const loadPdfs = async () => {
+  const loadExistingQuizAndStart = async (quizId) => {
+    setLoading(true)
     try {
-      const items = await pdfApi.list()
-      setPdfs(items || [])
+      const quiz = await quizApi.getQuiz(quizId)
+      // Auto-start the quiz directly without showing intermediate page
+      const quizData = {
+        quizId: quiz._id,
+        difficulty: quiz.difficulty,
+        types: quiz.types,
+        topic: quiz.topic,
+        questions: quiz.questions,
+        pdfId: quiz.pdf?._id || pdfId, // Include PDF reference from quiz or URL
+        isReattempt: true
+      }
+      
+      // Directly start the quiz
+      onStart(quizData)
     } catch (error) {
-      console.error('Failed to load PDFs:', error)
+      console.error('Failed to load quiz:', error)
+      
+      // Extract detailed error information
+      let errorMessage = 'Failed to load quiz. Please try again.'
+      if (error.response) {
+        console.error('Error response:', error.response.data)
+        console.error('Error status:', error.response.status)
+        errorMessage = error.response.data?.error || error.response.data?.message || errorMessage
+      } else if (error.request) {
+        console.error('No response received:', error.request)
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.'
+      } else {
+        console.error('Error message:', error.message)
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
+      setLoading(false)
     }
   }
 
@@ -53,19 +81,49 @@ export default function QuizGenerator({ onStart, pdfId }) {
       return
     }
 
+    // Validate that pdfId is provided
+    if (!pdfId) {
+      alert('PDF is required to generate a quiz')
+      return
+    }
+
     setLoading(true)
     try {
-      const quiz = await quizApi.generate({ 
-        pdfId: selectedPdf || undefined,
+      const payload = { 
+        pdfId: pdfId,
         difficulty, 
         types, 
         topic: topic || undefined,
-        count: questionCount 
-      })
+        count: questionCount,
+        reuseQuizId: reuseQuizId || undefined
+      }
+      console.log('Generating quiz with payload:', payload)
+      const quiz = await quizApi.generate(payload)
+      
+      // Show preview for all quizzes (removed auto-start behavior)
       setPreview(quiz)
     } catch (error) {
       console.error('Failed to generate quiz:', error)
-      alert('Failed to generate quiz. Please try again.')
+      
+      // Extract detailed error information
+      let errorMessage = 'Failed to generate quiz. Please try again.'
+      if (error.response) {
+        // Server responded with error
+        console.error('Error response:', error.response.data)
+        console.error('Error status:', error.response.status)
+        console.error('Full error data:', JSON.stringify(error.response.data, null, 2))
+        errorMessage = error.response.data?.error || error.response.data?.message || errorMessage
+      } else if (error.request) {
+        // Request was made but no response
+        console.error('No response received:', error.request)
+        errorMessage = 'Cannot connect to server. Please check if the backend is running.'
+      } else {
+        // Error in request setup
+        console.error('Error message:', error.message)
+        errorMessage = error.message
+      }
+      
+      alert(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -75,46 +133,36 @@ export default function QuizGenerator({ onStart, pdfId }) {
     setQuestionTypes(prev => ({ ...prev, [type]: !prev[type] }))
   }
 
+  // Show loading state while quiz is being loaded for reattempt
+  if (loading && reuseQuizId) {
+    return (
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px', textAlign: 'center' }}>
+        <div className="card" style={{ padding: 24 }}>
+          <p>⏳ Loading quiz...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
       <div className="card" style={{ padding: 24, marginBottom: 24 }}>
         <h2 style={{ marginTop: 0, marginBottom: 20 }}>
-          📝 Generate Quiz {pdfId && selectedPdfTitle && `for "${selectedPdfTitle}"`}
+          📝 Generate Quiz {selectedPdfTitle && `for "${selectedPdfTitle}"`}
         </h2>
         
         <div className={styles.configSection}>
-          {/* Only show PDF selector in custom mode (when no pdfId provided) */}
-          {!pdfId && (
+          {/* Show locked PDF info */}
+          <div className={styles.lockedPdfInfo}>
             <label className={styles.label}>
-              Select PDF (Optional)
-              <select 
-                value={selectedPdf} 
-                onChange={(e) => setSelectedPdf(e.target.value)}
-                className={styles.select}
-              >
-                <option value="">-- No PDF (General Quiz) --</option>
-                {pdfs.map((pdf) => (
-                  <option key={pdf._id} value={pdf._id}>
-                    {pdf.title || pdf.filename}
-                  </option>
-                ))}
-              </select>
+              Quiz Source
+              <div className={styles.lockedPdfBadge}>
+                <span className={styles.pdfIcon}>📄</span>
+                <span className={styles.pdfTitle}>{selectedPdfTitle}</span>
+                <span className={styles.lockedIcon}>🔒</span>
+              </div>
             </label>
-          )}
-
-          {/* Show locked PDF info when pdfId is provided */}
-          {pdfId && (
-            <div className={styles.lockedPdfInfo}>
-              <label className={styles.label}>
-                Quiz Source
-                <div className={styles.lockedPdfBadge}>
-                  <span className={styles.pdfIcon}>📄</span>
-                  <span className={styles.pdfTitle}>{selectedPdfTitle}</span>
-                  <span className={styles.lockedIcon}>🔒</span>
-                </div>
-              </label>
-            </div>
-          )}
+          </div>
 
           <label className={styles.label}>
             Topic (Optional)
@@ -201,9 +249,11 @@ export default function QuizGenerator({ onStart, pdfId }) {
         </div>
       </div>
 
-      {preview && (
+      {preview && !preview.isReattempt && (
           <div className="card" style={{ padding: 24 }}>
-            <h3 style={{ marginTop: 0, marginBottom: 20 }}>📋 Generated Quiz Preview</h3>
+            <h3 style={{ marginTop: 0, marginBottom: 20 }}>
+              📋 Generated Quiz Preview
+            </h3>
             <div className={styles.previewInfo}>
               <span className={styles.badge}>{preview.difficulty}</span>
               <span className={styles.badge}>{preview.questions.length} Questions</span>

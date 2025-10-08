@@ -125,6 +125,21 @@
   transform: translateY(0);
 }
 
+.modalButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.modalButton:disabled:hover {
+  transform: none !important;
+  background: var(--hover);
+}
+
+.confirmButton:disabled:hover {
+  background: var(--accent);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .modalContent {

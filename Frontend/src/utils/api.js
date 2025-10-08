@@ -128,6 +128,12 @@ export const quizApi = {
   getAttempts: async (pdfId) => {
     const params = pdfId ? { pdfId } : {}
     return (await api.get('/quiz/attempts', { params })).data.attempts
+  },
+  getAttempt: async (id) => (await api.get(`/quiz/attempts/${id}`)).data.attempt,
+  getQuiz: async (id) => (await api.get(`/quiz/quiz/${id}`)).data.quiz,
+  getQuizzes: async (pdfId) => {
+    const params = pdfId ? { pdfId } : {}
+    return (await api.get('/quiz/quizzes', { params })).data.quizzes
   }
 }
 

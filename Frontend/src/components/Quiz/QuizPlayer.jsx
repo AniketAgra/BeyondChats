@@ -4,7 +4,7 @@ import styles from './Quiz.module.css'
 import { quizApi } from '../../utils/api.js'
 import QuizModal from './QuizModal.jsx'
 
-export default function QuizPlayer({ quiz, onExit, pdfId }) {
+export default function QuizPlayer({ quiz, onExit, pdfId, originalAttemptId }) {
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState(Array(quiz.questions.length).fill(null))
   const [result, setResult] = useState(null)
@@ -38,23 +38,14 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
           isOpen: true,
           type: 'warning',
           title: 'Leave Quiz?',
-          message: 'You have an active quiz in progress. Please submit your quiz before leaving, or your progress will be lost.',
+          message: 'Your quiz will be automatically submitted with your current answers. Unanswered questions will be marked as incorrect. Do you want to continue?',
           confirmText: 'Stay on Quiz',
-          cancelText: 'Leave Anyway',
+          cancelText: 'Submit & Leave',
           onConfirm: () => {
             setModalState(prev => ({ ...prev, isOpen: false }))
             setPendingNavigation(null)
           },
-          onCancel: () => {
-            setModalState(prev => ({ ...prev, isOpen: false }))
-            setAllowNavigation(true)
-            // Execute the pending navigation after allowing
-            setTimeout(() => {
-              if (pendingNavigation) {
-                originalPush(...pendingNavigation.args)
-              }
-            }, 100)
-          }
+          onCancel: handleLeaveAnyway
         })
       }
 
@@ -64,22 +55,14 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
           isOpen: true,
           type: 'warning',
           title: 'Leave Quiz?',
-          message: 'You have an active quiz in progress. Please submit your quiz before leaving, or your progress will be lost.',
+          message: 'Your quiz will be automatically submitted with your current answers. Unanswered questions will be marked as incorrect. Do you want to continue?',
           confirmText: 'Stay on Quiz',
-          cancelText: 'Leave Anyway',
+          cancelText: 'Submit & Leave',
           onConfirm: () => {
             setModalState(prev => ({ ...prev, isOpen: false }))
             setPendingNavigation(null)
           },
-          onCancel: () => {
-            setModalState(prev => ({ ...prev, isOpen: false }))
-            setAllowNavigation(true)
-            setTimeout(() => {
-              if (pendingNavigation) {
-                originalReplace(...pendingNavigation.args)
-              }
-            }, 100)
-          }
+          onCancel: handleLeaveAnyway
         })
       }
 
@@ -89,22 +72,14 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
           isOpen: true,
           type: 'warning',
           title: 'Leave Quiz?',
-          message: 'You have an active quiz in progress. Please submit your quiz before leaving, or your progress will be lost.',
+          message: 'Your quiz will be automatically submitted with your current answers. Unanswered questions will be marked as incorrect. Do you want to continue?',
           confirmText: 'Stay on Quiz',
-          cancelText: 'Leave Anyway',
+          cancelText: 'Submit & Leave',
           onConfirm: () => {
             setModalState(prev => ({ ...prev, isOpen: false }))
             setPendingNavigation(null)
           },
-          onCancel: () => {
-            setModalState(prev => ({ ...prev, isOpen: false }))
-            setAllowNavigation(true)
-            setTimeout(() => {
-              if (pendingNavigation) {
-                originalGo(...pendingNavigation.args)
-              }
-            }, 100)
-          }
+          onCancel: handleLeaveAnyway
         })
       }
 
@@ -189,7 +164,7 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
     await submitQuiz()
   }
 
-  const submitQuiz = async () => {
+  const submitQuiz = async (isAutoSubmit = false) => {
     setSubmitting(true)
     try {
       const res = await quizApi.submit({ 
@@ -197,10 +172,31 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
         responses: answers, 
         topic: quiz.topic, 
         difficulty: quiz.difficulty,
-        pdfId 
+        pdfId: pdfId || quiz.pdfId, // Use pdfId prop or fallback to quiz.pdfId
+        quizId: quiz.quizId, // Include quizId for tracking
+        isReattempt: !!originalAttemptId, // Flag as reattempt if originalAttemptId exists
+        originalAttemptId: originalAttemptId || null // Reference to original attempt
       })
       setResult(res)
       setAllowNavigation(true) // Allow navigation after successful submission
+      
+      // If auto-submit, proceed with pending navigation after a brief delay
+      if (isAutoSubmit && pendingNavigation) {
+        setTimeout(() => {
+          if (navigationContext?.navigator && unblockRef.current) {
+            unblockRef.current()
+            const { navigator } = navigationContext
+            if (pendingNavigation.method === 'push') {
+              navigator.push(...pendingNavigation.args)
+            } else if (pendingNavigation.method === 'replace') {
+              navigator.replace(...pendingNavigation.args)
+            } else if (pendingNavigation.method === 'go') {
+              navigator.go(...pendingNavigation.args)
+            }
+            setPendingNavigation(null)
+          }
+        }, 500)
+      }
     } catch (error) {
       console.error('Failed to submit quiz:', error)
       setModalState({
@@ -216,30 +212,93 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
     }
   }
 
+  const handleLeaveAnyway = async () => {
+    // Show submitting state in modal
+    setModalState(prev => ({
+      ...prev,
+      isOpen: true,
+      type: 'info',
+      title: 'Submitting Quiz...',
+      message: 'Please wait while we save your progress and submit your quiz.',
+      showCancel: false,
+      confirmText: 'Submitting...',
+      disabled: true,
+      onConfirm: () => {} // Disabled during submission
+    }))
+    
+    // Auto-submit the quiz with current answers
+    await submitQuiz(true)
+    
+    // Close modal after submission
+    setModalState(prev => ({ ...prev, isOpen: false }))
+  }
+
   const isAnswered = answers[index] !== null && answers[index] !== ''
 
   if (result) {
     return (
       <div className={styles.results}> 
+        <button 
+          className={styles.backButton}
+          onClick={() => navigate(-1)}
+          title="Go back"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Back
+        </button>
         <div className={styles.resultsHeader}>
-          <h2>🎉 Quiz Completed!</h2>
+          <h2 className={styles.completionTitle}>
+            <span className={styles.completionIcon}>🎉</span>
+            Quiz Completed!
+          </h2>
           <div className={styles.scoreCard}>
             <div className={styles.mainScoreSection}>
-              <div className={styles.mainScore}>{result.score}%</div>
-              <div className={styles.mainScoreLabel}>Your Score</div>
+              <div className={styles.scoreCircle}>
+                <div className={styles.mainScore}>{result.score}%</div>
+                <div className={styles.mainScoreLabel}>SCORE</div>
+              </div>
             </div>
             <div className={styles.scoreDetails}>
-              <div className={`${styles.scoreDetailItem} ${styles.correct}`}>
-                <span className={styles.scoreDetailLabel}>✅ Correct</span>
-                <span className={styles.scoreDetailValue}>{result.correct}</span>
+              <div className={styles.scoreDetailItem}>
+                <div className={styles.iconBox} data-type="correct">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <div className={styles.scoreDetailContent}>
+                  <span className={styles.scoreDetailLabel}>Correct</span>
+                  <span className={styles.scoreDetailValue}>{result.correct}</span>
+                </div>
               </div>
-              <div className={`${styles.scoreDetailItem} ${styles.incorrect}`}>
-                <span className={styles.scoreDetailLabel}>❌ Wrong</span>
-                <span className={styles.scoreDetailValue}>{result.total - result.correct}</span>
+              <div className={styles.scoreDetailItem}>
+                <div className={styles.iconBox} data-type="wrong">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </div>
+                <div className={styles.scoreDetailContent}>
+                  <span className={styles.scoreDetailLabel}>Wrong</span>
+                  <span className={styles.scoreDetailValue}>{result.total - result.correct}</span>
+                </div>
               </div>
-              <div className={`${styles.scoreDetailItem} ${styles.total}`}>
-                <span className={styles.scoreDetailLabel}>📊 Total</span>
-                <span className={styles.scoreDetailValue}>{result.total}</span>
+              <div className={styles.scoreDetailItem}>
+                <div className={styles.iconBox} data-type="total">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="3" y1="15" x2="21" y2="15"></line>
+                  </svg>
+                </div>
+                <div className={styles.scoreDetailContent}>
+                  <span className={styles.scoreDetailLabel}>Total</span>
+                  <span className={styles.scoreDetailValue}>{result.total}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -247,13 +306,21 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
 
         <div className={styles.resultsControls}>
           <button 
-            className="btn secondary" 
+            className={styles.reviewButton}
             onClick={() => setShowExplanations(!showExplanations)}
           >
-            {showExplanations ? '📖 Hide Explanations' : '📖 Show Explanations'}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+            {showExplanations ? 'Hide Explanations' : 'Review Answers'}
           </button>
-          <button className="btn" onClick={onExit}>
-            🏠 Back to Quiz Generator
+          <button className={styles.reattemptButton} onClick={onExit}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Reattempt
           </button>
         </div>
 
@@ -444,6 +511,7 @@ export default function QuizPlayer({ quiz, onExit, pdfId }) {
         showCancel={modalState.showCancel !== false}
         confirmText={modalState.confirmText || 'OK'}
         cancelText={modalState.cancelText || 'Cancel'}
+        disabled={modalState.disabled || false}
       />
     </div>
   )

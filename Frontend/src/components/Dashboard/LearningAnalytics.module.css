@@ -1,0 +1,186 @@
+.container {
+  margin-bottom: 40px;
+}
+
+.sectionHeader {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--text);
+  margin: 0 0 8px 0;
+}
+
+.sectionSubtitle {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+}
+
+.chartsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .chartsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.chartCard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme='dark'] .chartCard {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chartCard:first-child {
+  grid-column: 1 / -1;
+}
+
+.chartHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.chartTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.chartBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-strong);
+  background: var(--accent-light);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.chartDescription {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.chartDescription .strong {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.chartDescription .moderate {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+.chartDescription .weak {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.chartWrapper {
+  height: 300px;
+  margin-top: 16px;
+}
+
+.heatmapWrapper {
+  margin-top: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.heatmapItem {
+  padding: 16px;
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.heatmapItem:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.heatmapTopic {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.heatmapStats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.heatmapScore {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.heatmapAttempts {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.emptyState {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.emptyState p {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.tooltip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tooltipLabel {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 4px 0;
+}
+
+.tooltipValue {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0;
+}
+
+.tooltipValue strong {
+  color: var(--accent-strong);
+  font-weight: 700;
+}

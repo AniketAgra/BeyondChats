@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './QuizzesHistoryPage.module.css'
 import { quizApi, analyticsApi } from '../utils/api.js'
+import QuizReviewModal from '../components/Quiz/QuizReviewModal.jsx'
+import ReattemptModal from '../components/Quiz/ReattemptModal.jsx'
 
 export default function QuizzesHistoryPage() {
   const [attempts, setAttempts] = useState([])
   const [loading, setLoading] = useState(true)
   const [analyticsData, setAnalyticsData] = useState(null)
+  const [selectedAttemptId, setSelectedAttemptId] = useState(null)
+  const [reattemptAttempt, setReattemptAttempt] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -29,8 +33,34 @@ export default function QuizzesHistoryPage() {
     }
   }
 
-  const handleGenerateQuiz = () => {
-    navigate('/quiz')
+  const handleReview = (attemptId) => {
+    setSelectedAttemptId(attemptId)
+  }
+
+  const handleReattemptClick = (attempt) => {
+    setReattemptAttempt(attempt)
+  }
+
+  const confirmReattempt = () => {
+    const attempt = reattemptAttempt
+    setReattemptAttempt(null)
+    
+    // If quiz reference exists, reattempt with same questions
+    if (attempt.quiz?._id) {
+      // Include pdfId to ensure PDF reference is maintained
+      const pdfParam = attempt.pdf?._id ? `&pdfId=${attempt.pdf._id}` : ''
+      navigate(`/quiz?reuseQuizId=${attempt.quiz._id}&originalAttemptId=${attempt._id}${pdfParam}`)
+    } else if (attempt.pdf) {
+      // Fallback to generating new quiz for the same PDF
+      navigate(`/quiz?pdfId=${attempt.pdf._id}&originalAttemptId=${attempt._id}`)
+    } else {
+      // If no PDF is associated, cannot create quiz
+      alert('Cannot reattempt: This quiz is not associated with a PDF.')
+    }
+  }
+
+  const cancelReattempt = () => {
+    setReattemptAttempt(null)
   }
 
   const getScoreColor = (score) => {
@@ -85,9 +115,6 @@ export default function QuizzesHistoryPage() {
           <h1>📚 Quiz History</h1>
           <p className={styles.subtitle}>Track your learning progress and performance</p>
         </div>
-        <button className="btn" onClick={handleGenerateQuiz}>
-          ✨ Generate New Quiz
-        </button>
       </div>
 
       {/* Analytics Cards */}
@@ -236,9 +263,19 @@ export default function QuizzesHistoryPage() {
             {attempts.map((attempt) => (
               <div key={attempt._id} className={styles.attemptCard}>
                 <div className={styles.attemptHeader}>
+                  <div className={`${styles.scoreCircle} ${getScoreColor(attempt.score)}`}>
+                    <div className={styles.scoreValue}>{attempt.score}%</div>
+                    <div className={styles.scoreLabel}>Score</div>
+                  </div>
+                  
                   <div className={styles.attemptInfo}>
                     <div className={styles.attemptTitle}>
                       {attempt.topic || 'General Quiz'}
+                      {attempt.isReattempt && (
+                        <span className={styles.reattemptTag}>
+                          🔄 Reattempt
+                        </span>
+                      )}
                       {attempt.pdf && (
                         <span className={styles.pdfTag}>
                           📄 {attempt.pdf.title || attempt.pdf.filename}
@@ -263,12 +300,29 @@ export default function QuizzesHistoryPage() {
                     </div>
                   </div>
                   
-                  <div className={`${styles.scoreCircle} ${getScoreColor(attempt.score)}`}>
-                    <div className={styles.scoreValue}>{attempt.score}%</div>
-                    <div className={styles.scoreLabel}>Score</div>
+                  <div className={styles.headerActions}>
+                    <button 
+                      className={styles.reviewButtonCompact}
+                      onClick={() => handleReview(attempt._id)}
+                    >
+                      Review Answers
+                    </button>
+                    <button 
+                      className={styles.reattemptButtonCompact}
+                      onClick={() => handleReattemptClick(attempt)}
+                    >
+                      Reattempt
+                    </button>
                   </div>
                 </div>
                 
+                <div className={styles.progressBar}>
+                  <div 
+                    className={styles.progressFill} 
+                    style={{ width: `${(attempt.correct / attempt.total) * 100}%` }}
+                  ></div>
+                </div>
+
                 <div className={styles.attemptStats}>
                   <div className={styles.attemptStat}>
                     <span className={styles.attemptStatLabel}>✅ Correct</span>
@@ -284,17 +338,28 @@ export default function QuizzesHistoryPage() {
                   </div>
                 </div>
 
-                <div className={styles.progressBar}>
-                  <div 
-                    className={styles.progressFill} 
-                    style={{ width: `${(attempt.correct / attempt.total) * 100}%` }}
-                  ></div>
-                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Review Modal */}
+      {selectedAttemptId && (
+        <QuizReviewModal
+          attemptId={selectedAttemptId}
+          onClose={() => setSelectedAttemptId(null)}
+        />
+      )}
+
+      {/* Reattempt Confirmation Modal */}
+      {reattemptAttempt && (
+        <ReattemptModal
+          attempt={reattemptAttempt}
+          onConfirm={confirmReattempt}
+          onCancel={cancelReattempt}
+        />
+      )}
     </div>
   )
 }

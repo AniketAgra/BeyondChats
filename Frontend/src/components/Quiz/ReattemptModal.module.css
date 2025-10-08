@@ -1,0 +1,270 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: var(--bg);
+  border-radius: 16px;
+  max-width: 500px;
+  width: 100%;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.3s ease;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+
+/* Custom Scrollbar */
+.modal::-webkit-scrollbar {
+  width: 10px;
+}
+
+.modal::-webkit-scrollbar-track {
+  background: var(--hover);
+  border-radius: 10px;
+  margin: 8px 0;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #14b8a6, #0d9488);
+  border-radius: 10px;
+  border: 2px solid var(--hover);
+  transition: background 0.3s ease;
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0d9488, #0a7c6f);
+}
+
+.modal::-webkit-scrollbar-thumb:active {
+  background: #0a7c6f;
+}
+
+/* Firefox Scrollbar */
+.modal {
+  scrollbar-width: thin;
+  scrollbar-color: #14b8a6 var(--hover);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.icon {
+  font-size: 64px;
+  animation: rotate 1.5s ease-in-out;
+}
+
+@keyframes rotate {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(360deg);
+  }
+}
+
+.title {
+  margin: 0 0 12px 0;
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text);
+}
+
+.description {
+  margin: 0 0 24px 0;
+  font-size: 15px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.quizDetails {
+  background: var(--hover);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.detailRow:first-child {
+  padding-top: 0;
+}
+
+.detailLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+
+.infoBox {
+  background: rgba(20, 184, 166, 0.1);
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.infoIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.infoText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cancelButton,
+.confirmButton {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cancelButton {
+  background: transparent;
+  color: var(--text);
+  border: 2px solid var(--border);
+}
+
+.cancelButton:hover {
+  background: var(--hover);
+  border-color: var(--muted);
+}
+
+.confirmButton {
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: white;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+}
+
+.confirmButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(20, 184, 166, 0.4);
+}
+
+.confirmButton:active {
+  transform: translateY(0);
+}
+
+.buttonIcon {
+  font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .modal {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .icon {
+    font-size: 48px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .cancelButton,
+  .confirmButton {
+    width: 100%;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .modal {
+  background: var(--bg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+[data-theme='dark'] .infoBox {
+  background: rgba(20, 184, 166, 0.15);
+}
+
+[data-theme='dark'] .modal::-webkit-scrollbar-track {
+  background: var(--card);
+}
+
+[data-theme='dark'] .modal::-webkit-scrollbar-thumb {
+  border-color: var(--card);
+}

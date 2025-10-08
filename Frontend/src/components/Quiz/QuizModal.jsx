@@ -11,7 +11,8 @@ export default function QuizModal({
   type = 'warning', 
   confirmText = 'OK', 
   cancelText = 'Cancel', 
-  showCancel = true 
+  showCancel = true,
+  disabled = false
 }) {
   if (!isOpen) return null
 
@@ -31,6 +32,7 @@ export default function QuizModal({
   }
 
   const handleCancel = () => {
+    if (disabled) return
     if (onCancel) {
       onCancel()
     } else {
@@ -38,9 +40,15 @@ export default function QuizModal({
     }
   }
 
+  const handleConfirm = () => {
+    if (disabled) return
+    onConfirm()
+  }
+
   const handleOverlayClick = () => {
+    if (disabled) return
     // Don't allow closing by clicking overlay for critical modals
-    if (type !== 'error') {
+    if (type !== 'error' && type !== 'info') {
       handleCancel()
     }
   }
@@ -62,15 +70,17 @@ export default function QuizModal({
             <button 
               className={`${styles.modalButton} ${styles.cancelButton}`}
               onClick={handleCancel}
+              disabled={disabled}
             >
               {cancelText}
             </button>
           )}
           <button 
             className={`${styles.modalButton} ${styles.confirmButton}`}
-            onClick={onConfirm}
+            onClick={handleConfirm}
+            disabled={disabled}
           >
-            {confirmText}
+            {disabled && type === 'info' ? '⏳ ' : ''}{confirmText}
           </button>
         </div>
       </div>
