@@ -3,6 +3,8 @@ import styles from './LibraryPage.module.css'
 import { useNavigate } from 'react-router-dom'
 import { pdfApi, keyFeaturesApi } from '../utils/api.js'
 import UploadPDFModal from '../components/modals/UploadPDFModal.jsx'
+import DeletePDFModal from '../components/modals/DeletePDFModal.jsx'
+import { RiDeleteBin6Line } from 'react-icons/ri'
 
 // Load data from API (no dummy items)
 
@@ -10,6 +12,7 @@ export default function LibraryPage() {
   const [items, setItems] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [openUpload, setOpenUpload] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
   const [keyFeaturesMap, setKeyFeaturesMap] = useState({}) // { pdfId: { status, keyPoints } }
   const nav = useNavigate()
 
@@ -97,6 +100,30 @@ export default function LibraryPage() {
     const newId = String(pdf?._id || pdf?.id || '') || undefined
     await loadList(newId)
     setOpenUpload(false)
+  }
+
+  const handleDeleteClick = () => {
+    if (!selected) return
+    setOpenDelete(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selected) return
+    
+    try {
+      await pdfApi.delete(selected.id)
+      setOpenDelete(false)
+      // Reload the list without the deleted PDF
+      await loadList()
+    } catch (e) {
+      console.error('Failed to delete PDF', e)
+      alert('Failed to delete PDF. Please try again.')
+      setOpenDelete(false)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setOpenDelete(false)
   }
 
   return (
@@ -219,6 +246,10 @@ export default function LibraryPage() {
                   )
                 })()}
                 <div className={styles.actions}>
+                  <button className={styles.deleteBtn} onClick={handleDeleteClick} title="Delete PDF and all related data">
+                    <RiDeleteBin6Line className={styles.deleteIcon} />
+                    Delete
+                  </button>
                   <button className={styles.open} onClick={() => nav(`/pdf/${selected?.id}`, { state: selected })}>Open in Viewer</button>
                 </div>
               </div>
@@ -227,6 +258,12 @@ export default function LibraryPage() {
         </section>
       </div>
       <UploadPDFModal open={openUpload} onClose={() => setOpenUpload(false)} onUploaded={onUploaded} />
+      <DeletePDFModal 
+        open={openDelete} 
+        onClose={handleDeleteCancel} 
+        onConfirm={handleDeleteConfirm}
+        pdfName={selected?.name || 'this PDF'}
+      />
     </div>
   )
 }

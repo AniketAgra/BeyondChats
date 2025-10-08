@@ -105,6 +105,10 @@ export const pdfApi = {
       }
     })
     return { data }
+  },
+  delete: async (id) => {
+    const { data } = await api.delete(`/pdf/${id}`)
+    return data
   }
 }
 

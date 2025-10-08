@@ -328,6 +328,55 @@ async function generateKeyFeaturesAsync(pdfText, userId, pdfId) {
 	}
 }
 
+// DELETE a PDF and all related data
+router.delete('/:id', requireAuth, async (req, res) => {
+	try {
+		const { id } = req.params
+		const doc = await Pdf.findOne({ _id: id, user: req.user._id })
+		if (!doc) return res.status(404).json({ error: 'PDF not found' })
+
+		// Import required schemas
+		const Note = (await import('../schemas/Note.js')).default
+		const ChatMessage = (await import('../schemas/ChatMessage.js')).default
+		const Quiz = (await import('../schemas/Quiz.js')).default
+		const QuizAttempt = (await import('../schemas/QuizAttempt.js')).default
+		const Topic = (await import('../schemas/Topic.js')).default
+		const TopicPerformance = (await import('../schemas/TopicPerformance.js')).default
+		const Summary = (await import('../schemas/Summary.js')).default
+
+		// Delete all related data
+		await Promise.all([
+			KeyFeatures.deleteMany({ pdfId: id }),
+			Note.deleteMany({ pdfId: id }),
+			ChatMessage.deleteMany({ pdfId: id }),
+			Quiz.deleteMany({ pdf: id }),
+			QuizAttempt.deleteMany({ pdf: id }),
+			Topic.deleteMany({ pdf: id }),
+			TopicPerformance.deleteMany({ pdf: id }),
+			Summary.deleteMany({ pdfId: id })
+		])
+
+		// Delete from Supabase storage if storage path exists
+		if (doc.storagePath) {
+			try {
+				const bucket = getBucket()
+				await bucket.remove([doc.storagePath])
+			} catch (storageError) {
+				console.error('Failed to delete file from storage:', storageError)
+				// Continue with DB deletion even if storage deletion fails
+			}
+		}
+
+		// Delete the PDF document itself
+		await Pdf.deleteOne({ _id: id })
+
+		res.json({ success: true, message: 'PDF and all related data deleted successfully' })
+	} catch (e) {
+		console.error('PDF deletion error:', e)
+		res.status(500).json({ error: e.message })
+	}
+})
+
 // Topic generation removed - topics are now auto-generated per quiz using AI
 // This simplifies the system by removing the need for separate topic tracking
 

@@ -272,7 +272,7 @@
 
 /* Summary Section Container with Slide Down Animation */
 .summarySection {
-  margin-top: 0;
+  margin-top: var(--space-5);
   margin-bottom: var(--space-5);
   width: 100%;
   max-width: 1200px;
@@ -424,6 +424,15 @@
   animation: fadeIn 0.3s ease-out;
 }
 
+.summary h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--border);
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -436,9 +445,8 @@
 }
 
 .summaryText { 
-  white-space: pre-wrap; 
-  line-height: 1.7;
-  font-size: 14px;
+  line-height: 1.8;
+  font-size: 14.5px;
   color: var(--text);
   transition: all 0.3s ease;
   position: relative;
@@ -447,11 +455,20 @@
   width: 100%;
 }
 
+.summaryText p {
+  margin-bottom: 1em;
+  line-height: 1.8;
+}
+
+.summaryText p:last-child {
+  margin-bottom: 0;
+}
+
 .summaryText.collapsed {
-  max-height: 150px;
+  max-height: 200px;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
 }
 
 .summaryText.expanded {

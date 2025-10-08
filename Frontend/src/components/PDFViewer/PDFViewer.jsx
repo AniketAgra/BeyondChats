@@ -5,6 +5,22 @@ import YouTubeSuggestions from '../YouTubeSuggestions/YouTubeSuggestions.jsx'
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
 
+// Helper function to clean and format summary text
+const sanitizeSummary = (text) => {
+  if (!text) return '';
+  
+  return text
+    .replace(/\\n/g, '\n') // Replace escaped newlines with actual newlines
+    .replace(/\\t/g, ' ') // Replace escaped tabs with spaces
+    .replace(/\\/g, '') // Remove remaining backslashes
+    .replace(/\*\*/g, '') // Remove markdown bold
+    .replace(/\*/g, '') // Remove markdown emphasis
+    .replace(/#{1,6}\s/g, '') // Remove markdown headers
+    .replace(/^\s*[-•]\s*/gm, '') // Remove bullet points
+    .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
+    .trim();
+};
+
 export default function PDFViewer({ file, summary, videos, onSummarize, isFullscreen, onToggleFullscreen, onPageChange }) {
   const [numPages, setNumPages] = useState(null)
   const [pageNumber, setPageNumber] = useState(1)
@@ -170,6 +186,9 @@ export default function PDFViewer({ file, summary, videos, onSummarize, isFullsc
           <div className="card" style={{ padding: 24 }}>Upload a PDF to begin.</div>
         )}
       </div>
+      {videos?.length ? (
+        <YouTubeSuggestions videos={videos} />
+      ) : null}
       {showSummary && (
         <div 
           ref={summaryRef}
@@ -186,7 +205,15 @@ export default function PDFViewer({ file, summary, videos, onSummarize, isFullsc
             <div className={styles.summary + ' card'}>
               <h3>Auto-generated Summary</h3>
               <div className={`${styles.summaryText} ${isExpanded ? styles.expanded : styles.collapsed}`}>
-                {summary}
+                {sanitizeSummary(summary).split('\n').map((paragraph, idx) => {
+                  const trimmed = paragraph.trim();
+                  if (!trimmed) return null;
+                  return (
+                    <p key={idx}>
+                      {trimmed}
+                    </p>
+                  );
+                })}
               </div>
               {summary && summary.length > 300 && (
                 <button 
@@ -200,9 +227,6 @@ export default function PDFViewer({ file, summary, videos, onSummarize, isFullsc
           ) : null}
         </div>
       )}
-      {videos?.length ? (
-        <YouTubeSuggestions videos={videos} />
-      ) : null}
     </div>
   )
 }
