@@ -13,6 +13,7 @@ import analyticsRouter from './routes/analytics.js';
 import debugRouter from './routes/debug.js';
 import keyFeaturesRouter from './routes/keyFeatures.js';
 import supabaseTestRouter from './routes/supabase-test.js';
+import aiBuddyRouter from './routes/aibuddy.js';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/key-features', keyFeaturesRouter);
+app.use('/api/ai-buddy', aiBuddyRouter);
 // Topics routes removed - topics are now auto-generated per quiz
 if (String(process.env.ENABLE_DEBUG_ROUTES).toLowerCase() === 'true') {
 	app.use('/api/debug', debugRouter);

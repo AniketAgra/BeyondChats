@@ -17,7 +17,9 @@ export default function ChatPanel({ pdfId }) {
   useEffect(() => { 
     if (pdfId && isConnected) {
       // Join PDF-specific room for real-time updates
-      joinPdf(pdfId)
+      joinPdf(pdfId, (stats) => {
+        console.log('Memory loaded:', stats)
+      })
       
       // Get chat history via Socket.io
       getChatHistory(pdfId, 50, (data) => {
@@ -125,7 +127,9 @@ export default function ChatPanel({ pdfId }) {
       setMessages(prev => [...prev, { role: 'user', content: userMessage, _id: Date.now() }])
       
       try {
-        const msgs = await chatApi.send({ content: userMessage, pdfId })
+        const response = await chatApi.send({ content: userMessage, pdfId })
+        // Backend returns { messages: [userMsg, aiMsg] }
+        const msgs = response.messages || []
         setMessages(prev => [...prev, ...msgs.filter(m => m.role !== 'user')])
       } catch (e) {
         setMessages(prev => [...prev, { 
@@ -154,7 +158,7 @@ export default function ChatPanel({ pdfId }) {
             <span className={`${styles.statusIndicator} ${isConnected ? styles.connected : styles.disconnected}`}></span>
           </h3>
           <p className={styles.headerSubtitle}>
-            {isConnected ? 'Real-time AI • Feel free to ask any question' : 'Connecting...'}
+            {isConnected ? 'Connected • Real-time AI Assistant' : 'Connecting...'}
           </p>
         </div>
       </div>
@@ -196,7 +200,10 @@ export default function ChatPanel({ pdfId }) {
         ) : (
           <>
             {messages.map((m, i) => (
-              <div key={m._id || i} className={m.role === 'ai' ? styles.ai : styles.user}>
+              <div 
+                key={m._id || i} 
+                className={`${m.role === 'ai' ? styles.ai : styles.user} ${m.role === 'ai' ? styles.fadeInUp : ''}`}
+              >
                 {m.role === 'ai' && <div className={styles.aiAvatar}>🤖</div>}
                 <div className={styles.messageContent}>
                   {m.content}
@@ -212,7 +219,7 @@ export default function ChatPanel({ pdfId }) {
               </div>
             ))}
             {streamingText && (
-              <div className={styles.ai}>
+              <div className={`${styles.ai} ${styles.streaming}`}>
                 <div className={styles.aiAvatar}>🤖</div>
                 <div className={styles.messageContent}>
                   {streamingText}

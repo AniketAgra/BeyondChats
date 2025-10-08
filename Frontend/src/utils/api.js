@@ -150,8 +150,15 @@ export const authApi = {
 }
 
 export const chatApi = {
-  list: async (pdfId) => (await api.get('/chat', { params: { pdfId } })).data.items,
-  send: async ({ content, pdfId }) => (await api.post('/chat/send', { content, pdfId })).data.messages,
+  getHistory: async ({ pdfId, limit = 50 } = {}) => {
+    const params = {}
+    if (pdfId) params.pdfId = pdfId
+    if (limit) params.limit = limit
+    return (await api.get('/chat', { params })).data
+  },
+  send: async ({ content, pdfId, conversationHistory = [] }) => {
+    return (await api.post('/chat/send', { content, pdfId, conversationHistory })).data
+  },
 }
 
 export const analyticsApi = {
@@ -165,6 +172,47 @@ export const analyticsApi = {
 export const keyFeaturesApi = {
   get: async (pdfId) => (await api.get(`/key-features/${pdfId}`)).data,
   generate: async (pdfId) => (await api.post(`/key-features/generate/${pdfId}`)).data,
+}
+
+export const aiBuddyApi = {
+  // Get all chat sessions
+  getSessions: async (type = null) => {
+    const params = type ? { type } : {}
+    return (await api.get('/ai-buddy/sessions', { params })).data
+  },
+  
+  // Create new chat session
+  createSession: async (type, pdfId = null, title = null) => {
+    const payload = { type }
+    if (pdfId) payload.pdfId = pdfId
+    if (title) payload.title = title
+    return (await api.post('/ai-buddy/sessions', payload)).data
+  },
+  
+  // Get messages for a session
+  getMessages: async (sessionId, limit = 50) => {
+    return (await api.get(`/ai-buddy/sessions/${sessionId}/messages`, { 
+      params: { limit } 
+    })).data
+  },
+  
+  // Send message in a session
+  sendMessage: async (sessionId, content, useRAG = true) => {
+    return (await api.post(`/ai-buddy/sessions/${sessionId}/messages`, {
+      content,
+      useRAG
+    })).data
+  },
+  
+  // Update session title
+  updateSession: async (sessionId, title) => {
+    return (await api.patch(`/ai-buddy/sessions/${sessionId}`, { title })).data
+  },
+  
+  // Delete session
+  deleteSession: async (sessionId) => {
+    return (await api.delete(`/ai-buddy/sessions/${sessionId}`)).data
+  }
 }
 
 export default api

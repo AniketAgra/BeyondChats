@@ -59,8 +59,17 @@ export function useChatSocket() {
     }
   }, [])
 
-  const joinPdf = (pdfId) => {
+  const joinPdf = (pdfId, onMemoryLoaded) => {
     if (socketRef.current && pdfId) {
+      // Listen for memory loaded confirmation
+      if (onMemoryLoaded) {
+        const handler = (stats) => {
+          onMemoryLoaded(stats)
+          socketRef.current.off('memory-loaded', handler)
+        }
+        socketRef.current.on('memory-loaded', handler)
+      }
+      
       socketRef.current.emit('join-pdf', { pdfId })
     }
   }

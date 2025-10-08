@@ -23,6 +23,7 @@ function ProtectedRoute({ children }) {
 function AppContent() {
   const location = useLocation()
   const isPDFPage = location.pathname.startsWith('/pdf/')
+  const isAIBuddyPage = location.pathname === '/aibuddy'
   
   return (
     <>
@@ -39,7 +40,7 @@ function AppContent() {
         <Route path="/aibuddy" element={<ProtectedRoute><AIBuddyPage /></ProtectedRoute>} />
         <Route path="*" element={<div className="container">Not Found. <Link to="/library">Go to Library</Link></div>} />
       </Routes>
-      {!isPDFPage && <FloatingAIBuddy />}
+      {!isPDFPage && !isAIBuddyPage && <FloatingAIBuddy />}
     </>
   )
 }
