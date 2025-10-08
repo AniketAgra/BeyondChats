@@ -37,16 +37,40 @@ async function llmSummarize(text) {
   const apiKey = process.env.OPENAI_API_KEY;
   const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
   const maxInput = Number(process.env.SUMMARIZE_MAX_CHARS || 12000);
-  const input = (text || '').slice(0, maxInput);
+  
+  // Clean and normalize the input text
+  const cleanText = (text || '')
+    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+    .replace(/\n{3,}/g, '\n\n') // Replace multiple newlines with double newline
+    .trim()
+    .slice(0, maxInput);
 
-  // Return full text without truncation
-  const fallback = () => input || 'Summary unavailable.';
+  // Return cleaned text without truncation
+  const fallback = () => {
+    if (!cleanText) return 'Summary unavailable.';
+    
+    // Create a basic structured summary from the text
+    const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 20);
+    const keyPoints = sentences.slice(0, 8).map(s => s.trim());
+    return keyPoints.join('.\n\n') + (keyPoints.length > 0 ? '.' : '');
+  };
 
   if (!apiKey) {
-    // Mock summary in dev without key - return full content
+    // Mock summary in dev without key - return structured content
     return fallback();
   }
-  const prompt = `Summarize the following study material into 5-8 bullet points with key topics and definitions.\n\n${input}`;
+  
+  const prompt = `Summarize the following study material. Provide a clear, well-structured summary with:
+- Main topic and key concepts
+- Important definitions and terminology
+- Key points explained in complete sentences
+- Use proper paragraph formatting
+
+Format your response in clear paragraphs with proper spacing. Do NOT use bullet points or special characters.
+
+Content:
+${cleanText}`;
+
   // Lazy import to avoid dependency unless needed
   try {
     const { default: axios } = await import('axios');
@@ -56,7 +80,7 @@ async function llmSummarize(text) {
         model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
-        max_tokens: 400
+        max_tokens: 600
       },
       {
         headers: {
@@ -66,7 +90,20 @@ async function llmSummarize(text) {
         timeout: 20000
       }
     );
-    return res.data.choices?.[0]?.message?.content || fallback();
+    
+    const rawSummary = res.data.choices?.[0]?.message?.content;
+    if (!rawSummary) return fallback();
+    
+    // Clean up the summary text
+    const cleanedSummary = rawSummary
+      .replace(/\*\*/g, '') // Remove markdown bold
+      .replace(/\*/g, '') // Remove markdown italics
+      .replace(/#{1,6}\s/g, '') // Remove markdown headers
+      .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines
+      .replace(/^\s*[-•]\s*/gm, '') // Remove bullet points at start of lines
+      .trim();
+    
+    return cleanedSummary;
   } catch (err) {
     // Degrade gracefully if API fails
     return fallback();

@@ -11,7 +11,7 @@ async function createLlmClient() {
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(apiKey);
     return {
-      async generate({ model = 'gemini-2.0-flash', prompt }) {
+      async generate({ model = 'gemini-1.5-flash', prompt }) {
         const m = genAI.getGenerativeModel({ model });
         const res = await m.generateContent(prompt);
         const text = res.response?.text?.() || res.response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -114,17 +114,30 @@ ${(text || '').slice(0, 9000)}
 
   const client = await getClient();
   if (!client) {
+    console.log('⚠️ No LLM client available, using fallback extraction');
     // Dev fallback key points - extract from text
     const lines = (text || '').split('\n').filter(l => l.trim().length > 20 && l.trim().length < 150);
     const points = lines.slice(0, Math.min(8, Math.max(2, Math.floor(lines.length / 20)))).map(l => l.trim());
     return points.length > 0 ? points : ['Key concepts from the document'];
   }
-  const response = await client.generate({ model: 'gemini-1.5-flash', prompt });
+  
   try {
+    console.log('🤖 Generating key points with Gemini API...');
+    const response = await client.generate({ model: 'gemini-1.5-flash', prompt });
+    console.log('✅ Received response from Gemini');
+    
     const output = JSON.parse(response.text || '[]');
-    if (Array.isArray(output) && output.length > 0) return output;
-  } catch {}
-  // Fallback if parsing fails - try to extract from text
+    if (Array.isArray(output) && output.length > 0) {
+      console.log(`✅ Successfully generated ${output.length} key points`);
+      return output;
+    }
+    
+    console.log('⚠️ Gemini returned empty or invalid array, using fallback');
+  } catch (error) {
+    console.error('❌ Error generating key points with AI:', error.message);
+  }
+  
+  // Fallback if parsing fails or AI returns empty - try to extract from text
   const lines = (text || '').split('\n').filter(l => l.trim().length > 20 && l.trim().length < 150);
   const points = lines.slice(0, Math.min(5, Math.max(2, Math.floor(lines.length / 20)))).map(l => l.trim());
   return points.length > 0 ? points : ['Unable to extract key points from document'];

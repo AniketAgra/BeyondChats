@@ -1,0 +1,181 @@
+.customSelect {
+  position: relative;
+  width: 100%;
+}
+
+.selectButton {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid rgba(145, 201, 182, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  font-family: inherit;
+}
+
+.selectButton:hover {
+  background: rgba(145, 201, 182, 0.08);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.selectButton:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(145, 201, 182, 0.05);
+  box-shadow: 0 0 0 4px rgba(145, 201, 182, 0.15);
+}
+
+.selectButton.open {
+  border-color: var(--accent);
+  background: rgba(145, 201, 182, 0.05);
+  box-shadow: 0 0 0 4px rgba(145, 201, 182, 0.15);
+}
+
+.selectedValue {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.arrow {
+  color: var(--accent);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.arrow svg {
+  width: 14px;
+  height: 8px;
+}
+
+.arrowUp {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3),
+              0 0 0 1px rgba(145, 201, 182, 0.1);
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Options */
+.option {
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  font-family: inherit;
+  position: relative;
+}
+
+.option:hover {
+  background: linear-gradient(90deg, rgba(145, 201, 182, 0.15) 0%, rgba(145, 201, 182, 0.08) 100%);
+  color: var(--accent-strong);
+  padding-left: 22px;
+}
+
+.option.selected {
+  background: linear-gradient(90deg, rgba(145, 201, 182, 0.2) 0%, rgba(145, 201, 182, 0.1) 100%);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.option.selected:hover {
+  background: linear-gradient(90deg, rgba(145, 201, 182, 0.25) 0%, rgba(145, 201, 182, 0.15) 100%);
+}
+
+.optionIcon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.optionLabel {
+  flex: 1;
+  text-transform: capitalize;
+}
+
+.checkmark {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-left: auto;
+  animation: checkmarkPop 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Add a subtle separator between options */
+.option:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(145, 201, 182, 0.1) 50%, 
+    transparent 100%);
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .dropdown {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(145, 201, 182, 0.15);
+  }
+}

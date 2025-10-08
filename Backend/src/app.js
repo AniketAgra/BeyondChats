@@ -12,6 +12,7 @@ import chatRouter from './routes/chat.js';
 import analyticsRouter from './routes/analytics.js';
 import debugRouter from './routes/debug.js';
 import keyFeaturesRouter from './routes/keyFeatures.js';
+import supabaseTestRouter from './routes/supabase-test.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/key-features', keyFeaturesRouter);
 // Topics routes removed - topics are now auto-generated per quiz
 if (String(process.env.ENABLE_DEBUG_ROUTES).toLowerCase() === 'true') {
 	app.use('/api/debug', debugRouter);
+	app.use('/api/test', supabaseTestRouter);
 }
 
 export default app;

@@ -431,39 +431,63 @@ router.get('/time-spent', requireAuth, async (req, res) => {
 router.get('/recommendations', requireAuth, async (req, res) => {
   try {
     const attempts = await QuizAttempt.find({ user: req.user._id })
+      .populate('pdf', 'title')
       .sort({ createdAt: -1 })
-      .limit(20)
+      .limit(50)
       .lean()
     
-    // Find weak topics (< 60% accuracy)
+    // Find weak topics (< 60% accuracy) with PDF information
     const topicStats = {}
     attempts.forEach(attempt => {
       if (attempt.topic) {
         if (!topicStats[attempt.topic]) {
-          topicStats[attempt.topic] = { scores: [] }
+          topicStats[attempt.topic] = { 
+            scores: [], 
+            pdfs: new Set(),
+            pdfDetails: []
+          }
         }
         topicStats[attempt.topic].scores.push(attempt.score || 0)
+        if (attempt.pdf) {
+          const pdfId = attempt.pdf._id || attempt.pdf
+          topicStats[attempt.topic].pdfs.add(pdfId.toString())
+          // Store PDF details if available
+          if (attempt.pdf.title) {
+            topicStats[attempt.topic].pdfDetails.push({
+              id: pdfId.toString(),
+              title: attempt.pdf.title
+            })
+          }
+        }
       }
     })
     
-    const weakTopics = Object.entries(topicStats)
+    const weakTopicsData = Object.entries(topicStats)
       .map(([topic, data]) => ({
         topic,
-        avgScore: data.scores.reduce((a, b) => a + b, 0) / data.scores.length
+        avgScore: data.scores.reduce((a, b) => a + b, 0) / data.scores.length,
+        attempts: data.scores.length,
+        // Get the most recent PDF for this topic
+        pdfId: Array.from(data.pdfs)[0],
+        pdfTitle: data.pdfDetails.length > 0 ? data.pdfDetails[data.pdfDetails.length - 1].title : null
       }))
       .filter(t => t.avgScore < 60)
-      .map(t => t.topic)
+      .sort((a, b) => a.avgScore - b.avgScore)
+      .slice(0, 5)
+    
+    const weakTopics = weakTopicsData.map(t => t.topic)
     
     const recommendations = [
       {
         id: 1,
         type: 'practice',
         title: 'Practice Weak Topics',
-        description: weakTopics.length > 0 
-          ? `Focus on: ${weakTopics.slice(0, 3).join(', ')}`
+        description: weakTopicsData.length > 0 
+          ? `Focus on: ${weakTopicsData[0].topic}`
           : 'Keep up the great work!',
         action: 'Generate Quiz',
-        icon: '🧩'
+        icon: '🧩',
+        weakestTopic: weakTopicsData.length > 0 ? weakTopicsData[0] : null
       },
       {
         id: 2,
@@ -491,7 +515,7 @@ router.get('/recommendations', requireAuth, async (req, res) => {
       }
     ]
     
-    res.json({ recommendations, weakTopics })
+    res.json({ recommendations, weakTopics, weakTopicsData })
   } catch (e) {
     res.status(500).json({ error: e.message })
   }

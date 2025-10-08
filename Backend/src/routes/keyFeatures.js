@@ -87,7 +87,17 @@ async function generateKeyFeaturesAsync(pdfDoc, userId, pdfId) {
     pdfText = data.text || ''
 
     // Generate key points using AI
+    console.log(`📄 Starting key point generation for PDF ${pdfId}`)
+    console.log(`📝 PDF text length: ${pdfText.length} characters`)
+    
     const keyPoints = await generateKeyPoints(pdfText)
+    
+    console.log(`🎯 Generated ${keyPoints.length} key points:`, keyPoints)
+
+    // Validate key points before saving
+    if (!keyPoints || keyPoints.length === 0) {
+      throw new Error('No key points were generated')
+    }
 
     // Update the document with generated key points
     await KeyFeatures.findOneAndUpdate(
@@ -99,9 +109,10 @@ async function generateKeyFeaturesAsync(pdfDoc, userId, pdfId) {
       { upsert: true }
     )
 
-    console.log(`Key features generated successfully for PDF ${pdfId}`)
+    console.log(`✅ Key features generated successfully for PDF ${pdfId}`)
   } catch (error) {
-    console.error('Error generating key features:', error)
+    console.error(`❌ Error generating key features for PDF ${pdfId}:`, error.message)
+    console.error('Full error:', error)
     
     // Update status to failed
     await KeyFeatures.findOneAndUpdate(

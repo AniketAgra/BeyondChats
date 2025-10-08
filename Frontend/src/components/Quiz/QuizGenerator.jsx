@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import styles from './Quiz.module.css'
 import { quizApi, pdfApi } from '../../utils/api.js'
+import CustomSelect from './CustomSelect'
 
 export default function QuizGenerator({ onStart, pdfId, reuseQuizId }) {
   const [difficulty, setDifficulty] = useState('medium')
@@ -151,8 +152,8 @@ export default function QuizGenerator({ onStart, pdfId, reuseQuizId }) {
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-      <div className="card" style={{ padding: 24, marginBottom: 24 }}>
-        <h2 style={{ marginTop: 0, marginBottom: 20 }}>
+      <div className="card" style={{ padding: '32px', marginBottom: 24 }}>
+        <h2 style={{ marginTop: 0, marginBottom: 24, fontSize: '24px', fontWeight: 700 }}>
           📝 Generate Quiz {selectedPdfTitle && `for "${selectedPdfTitle}"`}
         </h2>
         
@@ -179,64 +180,96 @@ export default function QuizGenerator({ onStart, pdfId, reuseQuizId }) {
             />
           </label>
 
-          <label className={styles.label}>
-            Difficulty Level
-            <select 
-              value={difficulty} 
-              onChange={(e) => setDifficulty(e.target.value)}
-              className={styles.select}
-            >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
-          </label>
+          {/* Difficulty and Question Count in a row */}
+          <div className={styles.formRow}>
+            <label className={styles.label} style={{ flex: 1 }}>
+              Difficulty Level
+              <CustomSelect
+                value={difficulty}
+                onChange={setDifficulty}
+                options={[
+                  { value: 'easy', label: 'Easy', icon: '😊' },
+                  { value: 'medium', label: 'Medium', icon: '🎯' },
+                  { value: 'hard', label: 'Hard', icon: '🔥' }
+                ]}
+                label="Select Difficulty"
+              />
+            </label>
 
-          <label className={styles.label}>
-            Number of Questions
-            <input 
-              type="number" 
-              value={questionCount} 
-              onChange={(e) => setQuestionCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 10)))} 
-              min="1" 
-              max="20"
-              className={styles.input}
-            />
-          </label>
+            <label className={styles.label} style={{ flex: 1 }}>
+              Number of Questions
+              <div className={styles.numberInputWrapper}>
+                <button 
+                  type="button"
+                  className={styles.numberBtn}
+                  onClick={() => setQuestionCount(Math.max(1, questionCount - 1))}
+                  disabled={questionCount <= 1}
+                >
+                  −
+                </button>
+                <input 
+                  type="number" 
+                  value={questionCount} 
+                  onChange={(e) => setQuestionCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 10)))} 
+                  min="1" 
+                  max="20"
+                  className={styles.numberInput}
+                />
+                <button 
+                  type="button"
+                  className={styles.numberBtn}
+                  onClick={() => setQuestionCount(Math.min(20, questionCount + 1))}
+                  disabled={questionCount >= 20}
+                >
+                  +
+                </button>
+              </div>
+            </label>
+          </div>
 
+          {/* Question Types in single line */}
           <div className={styles.questionTypesSection}>
             <span className={styles.label}>Question Types:</span>
-            <div className={styles.checkboxGroup}>
-              <label className={styles.checkbox}>
+            <div className={styles.checkboxGroupHorizontal}>
+              <label className={styles.checkboxModern}>
                 <input 
                   type="checkbox" 
                   checked={questionTypes.MCQ} 
                   onChange={() => toggleQuestionType('MCQ')}
                 />
-                <span>MCQ (Multiple Choice)</span>
+                <span className={styles.checkboxLabel}>
+                  <span className={styles.checkmark}></span>
+                  MCQ (Multiple Choice)
+                </span>
               </label>
-              <label className={styles.checkbox}>
+              <label className={styles.checkboxModern}>
                 <input 
                   type="checkbox" 
                   checked={questionTypes.SAQ} 
                   onChange={() => toggleQuestionType('SAQ')}
                 />
-                <span>SAQ (Short Answer)</span>
+                <span className={styles.checkboxLabel}>
+                  <span className={styles.checkmark}></span>
+                  SAQ (Short Answer)
+                </span>
               </label>
-              <label className={styles.checkbox}>
+              <label className={styles.checkboxModern}>
                 <input 
                   type="checkbox" 
                   checked={questionTypes.LAQ} 
                   onChange={() => toggleQuestionType('LAQ')}
                 />
-                <span>LAQ (Long Answer)</span>
+                <span className={styles.checkboxLabel}>
+                  <span className={styles.checkmark}></span>
+                  LAQ (Long Answer)
+                </span>
               </label>
             </div>
           </div>
 
           <div className={styles.buttonGroup}>
             <button 
-              className="btn" 
+              className={`btn ${styles.generateBtn}`}
               onClick={generate} 
               disabled={loading}
             >
@@ -244,7 +277,7 @@ export default function QuizGenerator({ onStart, pdfId, reuseQuizId }) {
             </button>
             {preview && (
               <button 
-                className="btn secondary" 
+                className={`btn ${styles.startBtn}`}
                 onClick={() => onStart(preview)}
               >
                 🎯 Start Quiz
@@ -256,8 +289,8 @@ export default function QuizGenerator({ onStart, pdfId, reuseQuizId }) {
 
       {preview && !preview.isReattempt && (
           <div className="card" style={{ padding: 24 }}>
-            <h3 style={{ marginTop: 0, marginBottom: 20 }}>
-              📋 Generated Quiz Preview
+            <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: '20px', fontWeight: 700 }}>
+              📋 Quiz Ready
             </h3>
             <div className={styles.previewInfo}>
               <span className={styles.badge}>{preview.difficulty}</span>
@@ -265,36 +298,27 @@ export default function QuizGenerator({ onStart, pdfId, reuseQuizId }) {
               <span className={styles.badge}>{preview.types.join(', ')}</span>
               {preview.topic && <span className={styles.badge}>Topic: {preview.topic}</span>}
             </div>
-            <div className={styles.previewList}>
-              {preview.questions.map((q, idx) => (
-                <div key={q.id} className={styles.previewItem}>
-                  <div className={styles.previewQuestionHeader}>
-                    <div className={styles.previewQuestionNumber}>Q{idx + 1}</div>
-                    <span className={styles.questionType}>{q.type}</span>
-                  </div>
-                  <div className={styles.previewQuestionText}>
-                    {q.question}
-                  </div>
-                  {q.type === 'MCQ' && (
-                    <ul className={styles.previewOptions}>
-                      {q.options.map((opt, i) => (
-                        <li 
-                          key={i} 
-                          data-option={String.fromCharCode(65 + i)}
-                          className={i === q.answerIndex ? styles.correctOption : ''}
-                        >
-                          {opt}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {q.explanation && (
-                    <div className={styles.previewExplanation}>
-                      <strong>💡 Explanation:</strong> {q.explanation}
-                    </div>
-                  )}
+            <div className={styles.previewSummary}>
+              <p className={styles.previewMessage}>
+                ✨ Your quiz has been generated successfully! Click "Start Quiz" above to begin.
+              </p>
+              <div className={styles.previewStats}>
+                <div className={styles.statCard}>
+                  <span className={styles.statIcon}>📝</span>
+                  <span className={styles.statNumber}>{preview.questions.length}</span>
+                  <span className={styles.statLabel}>Questions</span>
                 </div>
-              ))}
+                <div className={styles.statCard}>
+                  <span className={styles.statIcon}>⚡</span>
+                  <span className={styles.statNumber}>{preview.difficulty}</span>
+                  <span className={styles.statLabel}>Difficulty</span>
+                </div>
+                <div className={styles.statCard}>
+                  <span className={styles.statIcon}>📚</span>
+                  <span className={styles.statNumber}>{preview.types.length}</span>
+                  <span className={styles.statLabel}>Question Types</span>
+                </div>
+              </div>
             </div>
           </div>
         )

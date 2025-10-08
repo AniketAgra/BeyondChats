@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar/Sidebar.jsx'
 import PDFViewer from '../components/PDFViewer/PDFViewer.jsx'
@@ -18,9 +18,14 @@ export default function PDFPage() {
   const [keyFeaturesStatus, setKeyFeaturesStatus] = useState('loading')
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const videosFetchedRef = useRef(false)
 
   useEffect(() => {
-    (async () => {
+    // Reset videos fetched flag when PDF changes
+    videosFetchedRef.current = false
+    setVideos([])
+    
+    ;(async () => {
       try {
         if (!id) return
         // Always attempt to resolve a working URL via backend
@@ -44,15 +49,18 @@ export default function PDFPage() {
     if (!id) return
     try {
       const result = await keyFeaturesApi.get(id)
+      const previousStatus = keyFeaturesStatus
       setKeyFeaturesStatus(result.status || 'not_found')
       setKeyPoints(result.keyPoints || [])
       
-      // If key features are ready and we haven't fetched videos yet, suggest videos automatically
-      if (result.status === 'completed' && result.keyPoints?.length > 0 && videos.length === 0) {
+      // If key features are ready and we have key points, fetch videos if we haven't already
+      if (result.status === 'completed' && result.keyPoints?.length > 0 && !videosFetchedRef.current) {
+        console.log('Key features ready, fetching YouTube videos...')
+        videosFetchedRef.current = true
         await fetchYouTubeVideos(result.keyPoints)
       }
       
-      // If still generating, poll again
+      // If still generating or pending, poll again
       if (result.status === 'generating' || result.status === 'pending') {
         setTimeout(fetchKeyFeatures, 3000)
       }

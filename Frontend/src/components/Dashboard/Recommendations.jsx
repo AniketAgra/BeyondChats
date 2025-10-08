@@ -1,14 +1,21 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './Recommendations.module.css'
+import { ytApi } from '../../utils/api.js'
 
-export default function Recommendations({ recommendations, weakTopics }) {
+export default function Recommendations({ recommendations, weakTopics, weakTopicsData }) {
   const navigate = useNavigate()
+  const [loadingVideos, setLoadingVideos] = useState(false)
 
-  const handleAction = (rec) => {
+  const handleAction = async (rec) => {
     switch(rec.type) {
       case 'practice':
-        navigate('/quiz')
+        // If there's a weakest topic with PDF, navigate to quiz page for that PDF
+        if (rec.weakestTopic && rec.weakestTopic.pdfId) {
+          navigate(`/quiz?pdfId=${rec.weakestTopic.pdfId}`)
+        } else {
+          navigate('/library')
+        }
         break
       case 'revise':
         navigate('/library')
@@ -17,7 +24,13 @@ export default function Recommendations({ recommendations, weakTopics }) {
         navigate('/quiz')
         break
       case 'video':
-        navigate('/ai-buddy')
+        // Navigate to AI buddy with the weakest topic as query param
+        if (weakTopicsData && weakTopicsData.length > 0) {
+          const weakestTopic = weakTopicsData[0].topic
+          navigate(`/ai-buddy?topic=${encodeURIComponent(weakestTopic)}`)
+        } else {
+          navigate('/ai-buddy')
+        }
         break
       default:
         break
@@ -56,14 +69,34 @@ export default function Recommendations({ recommendations, weakTopics }) {
         ))}
       </div>
 
-      {weakTopics && weakTopics.length > 0 && (
+      {weakTopicsData && weakTopicsData.length > 0 && (
         <div className={styles.weakTopicsAlert}>
           <div className={styles.alertIcon}>⚠️</div>
           <div className={styles.alertContent}>
             <h4 className={styles.alertTitle}>Topics Needing Practice</h4>
-            <div className={styles.topicTags}>
-              {weakTopics.map((topic, idx) => (
-                <span key={idx} className={styles.topicTag}>{topic}</span>
+            <div className={styles.topicsList}>
+              {weakTopicsData.map((topicData, idx) => (
+                <div 
+                  key={idx} 
+                  className={styles.topicItem}
+                  onClick={() => {
+                    if (topicData.pdfId) {
+                      navigate(`/quiz?pdfId=${topicData.pdfId}`)
+                    }
+                  }}
+                  style={{ cursor: topicData.pdfId ? 'pointer' : 'default' }}
+                >
+                  <div className={styles.topicInfo}>
+                    <span className={styles.topicName}>{topicData.topic}</span>
+                    {topicData.pdfTitle && (
+                      <span className={styles.pdfName}>📄 {topicData.pdfTitle}</span>
+                    )}
+                  </div>
+                  <div className={styles.topicStats}>
+                    <span className={styles.accuracy}>{Math.round(topicData.avgScore)}%</span>
+                    <span className={styles.attempts}>{topicData.attempts} attempts</span>
+                  </div>
+                </div>
               ))}
             </div>
           </div>

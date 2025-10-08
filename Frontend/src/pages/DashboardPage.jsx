@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [timeSpent, setTimeSpent] = useState([])
   const [recommendations, setRecommendations] = useState([])
   const [weakTopics, setWeakTopics] = useState([])
+  const [weakTopicsData, setWeakTopicsData] = useState([])
 
   useEffect(() => {
     loadDashboardData()
@@ -40,6 +41,7 @@ export default function DashboardPage() {
       setTimeSpent(timeData.timeData || [])
       setRecommendations(recsData.recommendations || [])
       setWeakTopics(recsData.weakTopics || [])
+      setWeakTopicsData(recsData.weakTopicsData || [])
     } catch (e) {
       console.error('Failed to load dashboard data:', e)
     } finally {
@@ -97,6 +99,7 @@ export default function DashboardPage() {
       <Recommendations 
         recommendations={recommendations}
         weakTopics={weakTopics}
+        weakTopicsData={weakTopicsData}
       />
 
       {/* Recent Activity */}

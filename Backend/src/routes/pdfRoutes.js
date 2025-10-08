@@ -68,12 +68,28 @@ router.post('/upload', requireAuth, localUpload.single('pdf'), async (req, res) 
 			.replace(/[^a-z0-9_-]+/gi, '-').slice(0, 80)
 		const publicId = `${Date.now()}-${safeBaseName}`
 		const objectPath = `edulearn_pdfs/${String(req.user._id)}/${publicId}.pdf`
-		const { publicUrl, path: storedPath } = await uploadBufferToStorage({
-			path: objectPath,
-			buffer: file.buffer,
-			contentType: 'application/pdf',
-			upsert: true
-		})
+		
+		let publicUrl, storedPath
+		try {
+			const result = await uploadBufferToStorage({
+				path: objectPath,
+				buffer: file.buffer,
+				contentType: 'application/pdf',
+				upsert: true
+			})
+			publicUrl = result.publicUrl
+			storedPath = result.path
+		} catch (uploadError) {
+			console.error('Supabase upload error in route:', uploadError)
+			// Check for specific error types
+			if (uploadError.message && uploadError.message.includes('is not valid JSON')) {
+				return res.status(503).json({ 
+					error: 'Storage service error. Please check Supabase configuration.',
+					details: 'The storage service returned an invalid response. This may be due to incorrect bucket permissions or invalid credentials.'
+				})
+			}
+			throw uploadError
+		}
 
 		// 2) Extract text with pdf-parse
 		const data = await pdf(file.buffer)

@@ -188,7 +188,7 @@ export default function PDFViewer({ file, summary, videos, onSummarize, isFullsc
               <div className={`${styles.summaryText} ${isExpanded ? styles.expanded : styles.collapsed}`}>
                 {summary}
               </div>
-              {summary.length > 300 && (
+              {summary && summary.length > 300 && (
                 <button 
                   className={styles.readMoreBtn} 
                   onClick={() => setIsExpanded(!isExpanded)}

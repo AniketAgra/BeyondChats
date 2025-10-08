@@ -17,7 +17,7 @@
 .configSection {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .label {
@@ -31,20 +31,185 @@
 
 .select,
 .input {
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--card);
+  padding: 14px 16px;
+  border: 2px solid rgba(145, 201, 182, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text);
-  font-size: 14px;
-  transition: all 0.2s ease;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.select:hover,
+.input:hover {
+  background: rgba(145, 201, 182, 0.08);
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .select:focus,
 .input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(145, 201, 182, 0.1);
+  background: rgba(145, 201, 182, 0.05);
+  box-shadow: 0 0 0 4px rgba(145, 201, 182, 0.15);
+}
+
+/* Form Row */
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom Select Dropdown */
+.selectWrapper {
+  position: relative;
+}
+
+.selectWrapper .select {
+  width: 100%;
+  appearance: none;
+  cursor: pointer;
+  padding-right: 50px;
+  font-weight: 500;
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L7 7L13 1' stroke='%2391c9b6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 18px center;
+}
+
+.selectWrapper .select option {
+  background: linear-gradient(135deg, rgba(145, 201, 182, 0.05) 0%, rgba(145, 201, 182, 0.02) 100%);
+  color: var(--text);
+  padding: 14px 16px;
+  font-weight: 500;
+  font-size: 15px;
+  border-radius: 8px;
+  margin: 4px 0;
+}
+
+.selectWrapper .select option:hover {
+  background: linear-gradient(135deg, rgba(145, 201, 182, 0.2) 0%, rgba(145, 201, 182, 0.1) 100%);
+  color: var(--accent-strong);
+}
+
+.selectWrapper .select option:checked {
+  background: linear-gradient(135deg, var(--accent) 0%, rgba(145, 201, 182, 0.8) 100%);
+  color: #083344;
+  font-weight: 600;
+}
+
+/* Enhanced dropdown for better option styling */
+.selectWrapper .select:focus option:checked {
+  background: var(--accent) !important;
+  color: #083344 !important;
+}
+
+.selectIcon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--accent);
+  font-size: 12px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selectWrapper:focus-within .selectIcon {
+  transform: translateY(-50%) rotate(180deg);
+  color: var(--accent-strong);
+}
+
+/* Number Input with Buttons */
+.numberInputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid rgba(145, 201, 182, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0;
+}
+
+.numberInputWrapper:hover {
+  background: rgba(145, 201, 182, 0.08);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.numberInputWrapper:focus-within {
+  border-color: var(--accent);
+  background: rgba(145, 201, 182, 0.05);
+  box-shadow: 0 0 0 4px rgba(145, 201, 182, 0.15);
+}
+
+.numberInput {
+  flex: 1;
+  border: none !important;
+  text-align: center;
+  font-weight: 700;
+  font-size: 18px;
+  padding: 14px 8px;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none !important;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* Remove default number input arrows */
+.numberInput::-webkit-outer-spin-button,
+.numberInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.numberInput:focus {
+  outline: none;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.numberBtn {
+  width: 46px;
+  height: 46px;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  margin: 2px;
+}
+
+.numberBtn:hover:not(:disabled) {
+  background: var(--accent);
+  color: #083344;
+  transform: scale(1.05);
+}
+
+.numberBtn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.numberBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 /* Locked PDF Info */
@@ -114,10 +279,136 @@
   cursor: pointer;
 }
 
+/* Modern Horizontal Checkboxes */
+.checkboxGroupHorizontal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .checkboxGroupHorizontal {
+    flex-direction: column;
+  }
+}
+
+.checkboxModern {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.checkboxModern input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border: 2px solid rgba(145, 201, 182, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.checkboxModern:hover .checkboxLabel {
+  border-color: var(--accent);
+  background: rgba(145, 201, 182, 0.08);
+  transform: translateY(-1px);
+}
+
+.checkboxModern input[type="checkbox"]:checked ~ .checkboxLabel {
+  border-color: var(--accent);
+  background: rgba(145, 201, 182, 0.12);
+  box-shadow: 0 0 0 4px rgba(145, 201, 182, 0.1);
+}
+
+.checkmark {
+  position: relative;
+  height: 22px;
+  width: 22px;
+  border: 2px solid rgba(145, 201, 182, 0.3);
+  border-radius: 6px;
+  background: transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.checkboxModern:hover .checkmark {
+  border-color: var(--accent);
+  background: rgba(145, 201, 182, 0.1);
+}
+
+.checkboxModern input[type="checkbox"]:checked ~ .checkboxLabel .checkmark {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid #083344;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkboxModern input[type="checkbox"]:checked ~ .checkboxLabel .checkmark:after {
+  display: block;
+}
+
 .buttonGroup {
   display: flex;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 8px;
+}
+
+.generateBtn,
+.startBtn {
+  padding: 14px 28px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  flex: 1;
+}
+
+.startBtn {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%) !important;
+  color: white !important;
+  border: 2px solid #45a049 !important;
+}
+
+.startBtn:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+}
+
+@media (max-width: 640px) {
+  .buttonGroup {
+    flex-direction: column;
+  }
+  
+  .generateBtn,
+  .startBtn {
+    width: 100%;
+  }
 }
 
 /* Stats Card */
@@ -486,6 +777,65 @@
 .previewExplanation strong {
   color: var(--accent-strong);
   margin-right: 4px;
+}
+
+/* Preview Summary Styles */
+.previewSummary {
+  padding: 20px 0;
+}
+
+.previewMessage {
+  text-align: center;
+  font-size: 16px;
+  color: var(--text);
+  margin: 0 0 24px 0;
+  font-weight: 500;
+}
+
+.previewStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(145, 201, 182, 0.15);
+  transform: translateY(-2px);
+}
+
+.statIcon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.statNumber {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: capitalize;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* Player Styles */
