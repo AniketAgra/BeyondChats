@@ -1,18 +1,41 @@
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './FloatingAIBuddy.module.css'
 
 export default function FloatingAIBuddy({ isPDFPage = false }) {
   const navigate = useNavigate()
+  const messages = useMemo(() => [
+    'AI Buddy — Need help?',
+    'Ask me anything!',
+    'Stuck? I can help.',
+    'Quick tips inside',
+    'Want a summary?'
+  ], [])
+
+  const [msgIndex, setMsgIndex] = useState(() => Math.floor(Math.random() * messages.length))
+
+  // rotate message every 4 seconds
+  useEffect(() => {
+    const id = setInterval(() => {
+      setMsgIndex(i => (i + 1) % messages.length)
+    }, 4000)
+    return () => clearInterval(id)
+  }, [messages.length])
+
+  const currentMessage = messages[msgIndex]
+
   return (
-    <button
-      className={isPDFPage ? styles.fabPDF : styles.fab}
-      aria-label="Open AI Buddy"
-      title="AI Buddy"
-      onClick={() => navigate('/aibuddy')}
-    >
-      <BotIcon className={styles.icon} />
-    </button>
+    <div className={isPDFPage ? styles.fabWrapperPDF : styles.fabWrapper}>
+      <div className={styles.messageBubble} aria-live="polite">{currentMessage}</div>
+      <button
+        className={isPDFPage ? styles.fabPDF : styles.fab}
+        aria-label="Open AI Buddy"
+        title="AI Buddy"
+        onClick={() => navigate('/aibuddy')}
+      >
+        <BotIcon className={styles.icon} />
+      </button>
+    </div>
   )
 }
 

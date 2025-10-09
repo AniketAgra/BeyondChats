@@ -30,7 +30,7 @@ export default function OverviewCards({ data }) {
       unit: 'days',
       icon: '🔥',
       gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      description: overview.streak > 0 ? 'Keep it up!' : 'Start today!'
+      description: overview.streak > 0 ? 'Keep it up! - Quiz Daily!!' : 'Start today!'
     },
     {
       title: 'Top Coursebook',

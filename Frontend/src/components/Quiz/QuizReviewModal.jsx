@@ -105,14 +105,15 @@ export default function QuizReviewModal({ attemptId, onClose }) {
             </div>
 
             <div className={styles.actionsBar}>
+              
               <button 
                 className={styles.toggleButton}
                 onClick={() => setShowExplanations(!showExplanations)}
               >
-                {showExplanations ? '�️ Hide Explanations' : '�️ Show Explanations'}
+                {showExplanations ? 'Hide Explanations' : 'Show Explanations'}
               </button>
-              <button className={styles.reattemptButton} onClick={handleReattempt}>
-                🔄 Reattempt Quiz
+              <button className={styles.reattemptButton} >
+                Past Quiz
               </button>
             </div>
 

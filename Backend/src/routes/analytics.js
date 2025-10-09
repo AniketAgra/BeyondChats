@@ -402,25 +402,67 @@ router.get('/pdf-insights', requireAuth, async (req, res) => {
 // Time spent analytics
 router.get('/time-spent', requireAuth, async (req, res) => {
   try {
-    const attempts = await QuizAttempt.find({ user: req.user._id })
+    // Use UserActivity events to estimate real active time. We treat consecutive events
+    // within a GAP_MIN window as part of the same active session. Each session's
+    // duration is approximated by the time between first and last event, with a
+    // minimum granularity of 1 minute.
+    const UserActivity = (await import('../schemas/UserActivity.js')).default
+
+    const events = await UserActivity.find({ user: req.user._id })
       .sort({ createdAt: 1 })
       .lean()
-    
-    // Group by day
-    const dailyTime = {}
-    attempts.forEach(attempt => {
-      const date = new Date(attempt.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      dailyTime[date] = (dailyTime[date] || 0) + 10 // 10 minutes per quiz
+
+    const GAP_MIN = 30 // minutes; gap between events that defines separate sessions
+    const gapMs = GAP_MIN * 60 * 1000
+
+    // Build sessions from events
+    const sessions = []
+    let curSession = null
+    events.forEach(e => {
+      const t = new Date(e.createdAt).getTime()
+      if (!curSession) {
+        curSession = { start: t, end: t }
+      } else if (t - curSession.end <= gapMs) {
+        curSession.end = t
+      } else {
+        sessions.push(curSession)
+        curSession = { start: t, end: t }
+      }
     })
-    
+    if (curSession) sessions.push(curSession)
+
+    // Aggregate daily minutes
+    const dailyTime = {}
+    sessions.forEach(s => {
+      // ensure at least 1 minute for a session
+      let durationMs = Math.max(60 * 1000, s.end - s.start)
+      // Split across days if session spans midnight
+      let start = new Date(s.start)
+      let end = new Date(s.end)
+
+      // iterate day by day
+      let cur = new Date(start)
+      cur.setHours(0,0,0,0)
+      while (cur <= end) {
+        const dayStart = new Date(cur)
+        const dayEnd = new Date(cur)
+        dayEnd.setHours(23,59,59,999)
+
+        const segStart = Math.max(start.getTime(), dayStart.getTime())
+        const segEnd = Math.min(end.getTime(), dayEnd.getTime())
+        if (segEnd >= segStart) {
+          const mins = Math.round((segEnd - segStart) / 1000 / 60)
+          const label = new Date(segStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          dailyTime[label] = (dailyTime[label] || 0) + mins
+        }
+        cur.setDate(cur.getDate() + 1)
+      }
+    })
+
     const timeData = Object.entries(dailyTime)
-      .slice(-7) // Last 7 days
-      .map(([date, minutes]) => ({
-        date,
-        minutes,
-        hours: (minutes / 60).toFixed(1)
-      }))
-    
+      .slice(-7) // last 7 days (note: keys come in insertion order from sessions)
+      .map(([date, minutes]) => ({ date, minutes, hours: (minutes / 60).toFixed(1) }))
+
     res.json({ timeData })
   } catch (e) {
     res.status(500).json({ error: e.message })

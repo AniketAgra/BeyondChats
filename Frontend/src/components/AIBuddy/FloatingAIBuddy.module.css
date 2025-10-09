@@ -17,6 +17,29 @@
   animation: fadeInUp 0.4s ease;
 }
 
+.fabWrapper {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: block;
+  /* make wrapper same size as FAB so bubble can center vertically relative to icon */
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  gap: 0;
+  z-index: 1000;
+}
+
+.fabWrapperPDF {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: block;
+  width: 56px;
+  height: 56px;
+  z-index: 100;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -58,6 +81,26 @@
   transition: transform 0.2s ease;
 }
 
+/* Subtle blink/pulse every 3s to attract attention */
+.icon {
+  animation: fabBlink 3s infinite;
+  transform-origin: center;
+}
+
+@keyframes fabBlink {
+  0% { opacity: 1; transform: scale(1); }
+  4% { opacity: 0.85; transform: scale(0.94); }
+  8% { opacity: 1; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    animation: none;
+  }
+}
+
 .fab:hover .icon,
 .fabPDF:hover .icon {
   transform: scale(1.1);
@@ -65,6 +108,10 @@
 
 @media (max-width: 1024px) {
   .fabPDF {
+    right: 16px;
+    bottom: 80px;
+  }
+  .fabWrapperPDF {
     right: 16px;
     bottom: 80px;
   }
@@ -84,4 +131,61 @@
     width: 52px; 
     height: 52px; 
   } 
+  .fabWrapper {
+  right: 16px; 
+  bottom: 16px; 
+  width: 52px;
+  height: 52px;
+  }
+  .fabWrapperPDF {
+  right: 16px; 
+  bottom: 80px; 
+  width: 52px;
+  height: 52px;
+  }
+  .messageBubble {
+    right: 66px; /* slightly reduced offset for smaller FAB */
+    max-width: 55vw;
+  }
+}
+
+/* Message bubble */
+.messageBubble {
+  position: absolute;
+  /* place bubble to the left of the FAB and center vertically */
+  right: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: color-mix(in oklab, var(--bg) 80%, var(--accent) 20%);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  max-width: min(60vw, 220px); /* avoid overflow on small screens */
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform-origin: center;
+  transition: opacity 0.32s ease, transform 0.32s ease;
+  opacity: 0.98;
+}
+
+/* caret/triangle pointing right to FAB */
+.messageBubble::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 6px solid color-mix(in oklab, var(--bg) 80%, var(--accent) 20%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .messageBubble { transition: none; }
 }

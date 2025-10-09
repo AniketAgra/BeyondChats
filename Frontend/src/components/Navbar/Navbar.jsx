@@ -60,27 +60,17 @@ export default function Navbar() {
               >
                 Quizzes
               </Link>
-              <Link 
-                className={pathname.startsWith('/aibuddy') ? styles.active : ''} 
-                to="/aibuddy"
-                onClick={handleNavClick}
-              >
-                AI Buddy
-              </Link>
             </div>
 
-            <div className={styles.navActions}>
+            <div className={styles.userArea}>
               <ThemeToggle />
               {user ? (
-                <div className={styles.userArea}>
+                <>
                   <span className={styles.userName}>Hi, {user.name}</span>
                   <button className={styles.logoutBtn} onClick={doLogout}>Logout</button>
-                </div>
+                </>
               ) : (
-                <div className={styles.authLinks}>
-                  <Link to="/login" onClick={handleNavClick}>Login</Link>
-                  <Link to="/signup" className={styles.signup} onClick={handleNavClick}>Sign up</Link>
-                </div>
+                <Link to="/login">Login</Link>
               )}
             </div>
           </nav>
