@@ -209,8 +209,6 @@ export async function queryGeneralContext(userId, query, topK = 5) {
  * Used by PDF Buddy for focused, document-specific answers
  */
 export async function queryPDFContext(userId, pdfId, query, topK = 5) {
-  console.log(`[Vector Service] Querying PDF context - User: ${userId}, PDF: ${pdfId}`)
-  
   if (!isPineconeAvailable()) {
     console.warn('[Vector Service] Pinecone not available for PDF query')
     return { success: false, matches: [] }
@@ -220,16 +218,12 @@ export async function queryPDFContext(userId, pdfId, query, topK = 5) {
     const embedding = await generateEmbedding(query)
     const index = getPineconeIndex()
     const namespace = `${userId}_${pdfId}`
-    
-    console.log(`[Vector Service] Searching namespace: ${namespace}`)
 
     const results = await index.namespace(namespace).query({
       vector: embedding,
       topK,
       includeMetadata: true
     })
-    
-    console.log(`[Vector Service] Found ${results.matches.length} matches for PDF query`)
 
     const matches = results.matches.map(m => ({
       score: m.score,

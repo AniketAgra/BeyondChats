@@ -296,10 +296,6 @@ function cleanupExpiredSessions() {
   }
   
   keysToDelete.forEach(key => sessionMemory.delete(key))
-  
-  if (keysToDelete.length > 0) {
-    console.log(`🧹 Cleaned up ${keysToDelete.length} expired chat sessions`)
-  }
 }
 
 /**
@@ -370,12 +366,6 @@ export function needsContextRefresh(userId, pdfId) {
 
 // Start cleanup interval
 setInterval(cleanupExpiredSessions, CONFIG.CLEANUP_INTERVAL)
-
-// Log memory service initialization
-console.log('✅ Chat Memory Service initialized')
-console.log(`   Max messages per session: ${CONFIG.MAX_MESSAGES}`)
-console.log(`   Max words per session: ${CONFIG.MAX_WORDS}`)
-console.log(`   Session timeout: ${CONFIG.SESSION_TIMEOUT / 1000 / 60} minutes`)
 
 export default {
   getSessionMemory,

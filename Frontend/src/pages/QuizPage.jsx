@@ -11,10 +11,6 @@ export default function QuizPage() {
   const originalAttemptId = searchParams.get('originalAttemptId')
   const [quiz, setQuiz] = useState(null)
   
-  console.log('QuizPage - pdfId from URL:', pdfId)
-  console.log('QuizPage - reuseQuizId from URL:', reuseQuizId)
-  console.log('QuizPage - originalAttemptId from URL:', originalAttemptId)
-  
   // Require pdfId or reuseQuizId to access the quiz page
   if (!pdfId && !reuseQuizId) {
     return (

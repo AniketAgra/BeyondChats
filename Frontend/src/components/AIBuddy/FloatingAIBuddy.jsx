@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from './FloatingAIBuddy.module.css'
+import { useAuth } from '../../context/AuthContext'
 
 export default function FloatingAIBuddy({ isPDFPage = false }) {
   const navigate = useNavigate()
@@ -13,20 +14,44 @@ export default function FloatingAIBuddy({ isPDFPage = false }) {
   ], [])
 
   const [msgIndex, setMsgIndex] = useState(() => Math.floor(Math.random() * messages.length))
+  const [isSmallScreen, setIsSmallScreen] = useState(false)
+  const { user } = useAuth()
 
-  // rotate message every 4 seconds
+  // detect tablet/mobile screens (<=1024px) client-side
   useEffect(() => {
+    function check() {
+      setIsSmallScreen(window.matchMedia('(max-width: 1024px)').matches)
+    }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  // rotate message every 4 seconds only when NOT on PDF page small-screen
+  useEffect(() => {
+    if (isPDFPage && isSmallScreen) return undefined
     const id = setInterval(() => {
       setMsgIndex(i => (i + 1) % messages.length)
     }, 4000)
     return () => clearInterval(id)
-  }, [messages.length])
+  }, [messages.length, isPDFPage, isSmallScreen])
 
   const currentMessage = messages[msgIndex]
 
+  // If on tablet/mobile (<=1024px) hide the whole AI Buddy (icon + text)
+  if (isSmallScreen) return null
+
+  // Hide AI buddy entirely when user is not logged in
+  if (!user) return null
+
+  // Otherwise render normally (bubble shown/rotating unless PDF+small-screen handled earlier)
+  const showBubble = !(isPDFPage && isSmallScreen)
+
   return (
     <div className={isPDFPage ? styles.fabWrapperPDF : styles.fabWrapper}>
-      <div className={styles.messageBubble} aria-live="polite">{currentMessage}</div>
+      {showBubble && (
+        <div className={styles.messageBubble} aria-live="polite">{currentMessage}</div>
+      )}
       <button
         className={isPDFPage ? styles.fabPDF : styles.fab}
         aria-label="Open AI Buddy"

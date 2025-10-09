@@ -63,6 +63,13 @@ export default function QuizzesHistoryPage() {
     setReattemptAttempt(null)
   }
 
+  // Navigate to quiz creation/generation page when user requests a new quiz
+  const handleGenerateQuiz = () => {
+    // Navigate to the quiz creation route. If you have a PDF selected flow,
+    // this can be extended to accept pdfId or other params.
+    navigate('/quiz')
+  }
+
   const getScoreColor = (score) => {
     if (score >= 80) return styles.excellent
     if (score >= 60) return styles.good

@@ -46,9 +46,7 @@ export default function ChatPanel({ pdfId }) {
 
     // If Socket.io is connected, also join the room for real-time updates
     if (isConnected) {
-      joinPdf(pdfId, (stats) => {
-        console.log('Memory loaded:', stats)
-      })
+      joinPdf(pdfId, (stats) => {})
       
       return () => {
         leavePdf(pdfId)

@@ -52,7 +52,7 @@ Complete REST API and WebSocket reference:
 - Analytics (`/api/analytics/*`)
 - Chat (`/api/chat/*`)
 - Notes (`/api/notes/*`)
-- AI Study Buddy (`/api/ai-buddy/*`)
+- AI Study Buddy (`/api/aibuddy/*`)
 
 ---
 

@@ -891,13 +891,13 @@ Authorization: Bearer <access_token>
 
 ## 🤖 AI Study Buddy Endpoints
 
-### GET /ai-buddy/sessions
+### GET /aibuddy/sessions
 
 List chat sessions.
 
 **Request:**
 ```http
-GET /api/ai-buddy/sessions?type=general
+GET /api/aibuddy/sessions?type=general
 Authorization: Bearer <access_token>
 ```
 
@@ -921,13 +921,13 @@ Authorization: Bearer <access_token>
 
 ---
 
-### POST /ai-buddy/sessions
+### POST /aibuddy/sessions
 
 Create new chat session.
 
 **Request:**
 ```http
-POST /api/ai-buddy/sessions
+POST /api/aibuddy/sessions
 Authorization: Bearer <access_token>
 Content-Type: application/json
 
@@ -953,13 +953,13 @@ Content-Type: application/json
 
 ---
 
-### GET /ai-buddy/sessions/:sessionId/messages
+### GET /aibuddy/sessions/:sessionId/messages
 
 Get messages in session.
 
 **Request:**
 ```http
-GET /api/ai-buddy/sessions/session123/messages?limit=50
+GET /api/aibuddy/sessions/session123/messages?limit=50
 Authorization: Bearer <access_token>
 ```
 
@@ -980,13 +980,13 @@ Authorization: Bearer <access_token>
 
 ---
 
-### POST /ai-buddy/sessions/:sessionId/messages
+### POST /aibuddy/sessions/:sessionId/messages
 
 Send message in session (AI Study Buddy responds).
 
 **Request:**
 ```http
-POST /api/ai-buddy/sessions/session123/messages
+POST /api/aibuddy/sessions/session123/messages
 Authorization: Bearer <access_token>
 Content-Type: application/json
 

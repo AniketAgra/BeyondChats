@@ -88,7 +88,6 @@ export async function generateQuiz({ text, pdfId, difficulty = 'medium', types =
     let quizTopic = topic;
     if (!quizTopic && text) {
       quizTopic = await generateTopicFromContent(text, client);
-      console.log('AI-generated topic:', quizTopic);
     }
     
     const questionsPerType = Math.ceil(count / types.length);

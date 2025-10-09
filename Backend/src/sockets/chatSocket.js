@@ -41,13 +41,13 @@ export function setupSocketHandlers(io) {
   })
 
   io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.user.email} (${socket.id})`)
+
 
     // Join PDF-specific room and load conversation memory
     socket.on('join-pdf', async ({ pdfId }) => {
       if (pdfId) {
         socket.join(`pdf-${pdfId}`)
-        console.log(`User ${socket.user.email} joined PDF room: ${pdfId}`)
+
         
         // Load conversation history from database into memory
         await loadMemoryFromDatabase(socket.user._id, pdfId)
@@ -62,7 +62,7 @@ export function setupSocketHandlers(io) {
     socket.on('leave-pdf', ({ pdfId }) => {
       if (pdfId) {
         socket.leave(`pdf-${pdfId}`)
-        console.log(`User ${socket.user.email} left PDF room: ${pdfId}`)
+
       }
     })
 
@@ -207,7 +207,7 @@ export function setupSocketHandlers(io) {
 
     // Disconnect handler
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.user.email} (${socket.id})`)
+
     })
 
     // Error handler

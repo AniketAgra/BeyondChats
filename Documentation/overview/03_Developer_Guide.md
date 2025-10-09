@@ -36,7 +36,7 @@ Edit `.env` with your configuration:
 ```env
 PORT=4000
 MONGO_URI=mongodb://localhost:27017/edulearn
-ORIGIN=http://localhost:5173
+ORIGIN=http://localhost:5174
 
 # Required for AI features
 GEMINI_API_KEY=your_gemini_api_key
@@ -74,13 +74,13 @@ npm install
 npm run dev
 ```
 
-Frontend runs on `http://localhost:5173`
+Frontend runs on `http://localhost:5174`
 
 ### 4. Access the Application
 
 Open browser and navigate to:
 ```
-http://localhost:5173
+http://localhost:5174
 ```
 
 Create an account and start using EduLearn! 🎉
@@ -97,7 +97,7 @@ Create an account and start using EduLearn! 🎉
 ```env
 PORT=4000                              # Backend server port
 MONGO_URI=mongodb://localhost:27017/edulearn  # MongoDB connection string
-ORIGIN=http://localhost:5173           # Frontend URL for CORS
+ORIGIN=http://localhost:5174           # Frontend URL for CORS
 ```
 
 **AI Configuration:**
@@ -243,7 +243,7 @@ curl http://localhost:4000/api/health
 
 ### 2. Test PDF Upload
 
-1. Go to `http://localhost:5173/library`
+1. Go to `http://localhost:5174/library`
 2. Click "Upload PDF"
 3. Select a PDF file
 4. Verify it appears in the library

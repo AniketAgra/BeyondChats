@@ -149,6 +149,15 @@
   }
 }
 
+/* Specifically hide the message bubble on PDF viewer for small screens (<=768px)
+   The component renders .fabWrapperPDF for PDF pages; this keeps the icon
+   visible while preventing the blinking/rotating text from covering the PDF. */
+@media (max-width: 768px) {
+  .fabWrapperPDF .messageBubble {
+    display: none;
+  }
+}
+
 /* Message bubble */
 .messageBubble {
   position: absolute;

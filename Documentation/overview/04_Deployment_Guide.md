@@ -349,7 +349,7 @@ Use different secrets for access and refresh tokens.
 Backend `src/app.js`:
 
 ```javascript
-const ORIGIN = process.env.ORIGIN || 'http://localhost:5173';
+const ORIGIN = process.env.ORIGIN || 'http://localhost:5174';
 app.use(cors({ 
   origin: ORIGIN, 
   credentials: true 

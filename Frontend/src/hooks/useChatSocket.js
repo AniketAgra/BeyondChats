@@ -35,13 +35,11 @@ export function useChatSocket() {
 
     // Connection event handlers
     socket.on('connect', () => {
-      console.log('Socket.io connected')
       setIsConnected(true)
       setError(null)
     })
 
     socket.on('disconnect', () => {
-      console.log('Socket.io disconnected')
       setIsConnected(false)
     })
 

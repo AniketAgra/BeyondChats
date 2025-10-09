@@ -15,8 +15,6 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
  * Get user's performance summary
  */
 async function getUserPerformance(userId) {
-  console.log(`[AI Study Buddy] Fetching performance for user: ${userId}`)
-  
   try {
     const quizAttempts = await QuizAttempt.find({ user: userId })
       .sort({ createdAt: -1 })
@@ -36,8 +34,6 @@ async function getUserPerformance(userId) {
     const weakTopics = topicPerformance
       .filter(t => t.accuracy < 70)
       .map(t => t.topic)
-
-    console.log(`[AI Study Buddy] Performance stats - Quizzes: ${totalQuizzes}, Avg: ${averageScore.toFixed(1)}%, Weak topics: ${weakTopics.length}`)
 
     return {
       totalQuizzes,
@@ -60,8 +56,6 @@ async function getUserPerformance(userId) {
  * Gathers ALL user data for comprehensive mentoring
  */
 async function buildStudyBuddyContext(userId, question) {
-  console.log(`[AI Study Buddy] Building context for question: "${question.substring(0, 50)}..."`)
-  
   const context = {
     performance: null,
     ragMatches: [],
@@ -73,13 +67,9 @@ async function buildStudyBuddyContext(userId, question) {
     context.performance = await getUserPerformance(userId)
 
     // Get vector search results (Pinecone RAG - across ALL user data)
-    console.log('[AI Study Buddy] Querying RAG for relevant context...')
     const ragResults = await queryGeneralContext(userId, question, 5)
     if (ragResults.success && ragResults.matches) {
       context.ragMatches = ragResults.matches
-      console.log(`[AI Study Buddy] RAG returned ${ragResults.matches.length} relevant matches`)
-    } else {
-      console.log('[AI Study Buddy] No RAG matches found or RAG unavailable')
     }
 
     // Get user's PDF list (for awareness of available materials)
@@ -88,7 +78,6 @@ async function buildStudyBuddyContext(userId, question) {
       .limit(10)
       .lean()
     context.userPDFs = pdfs
-    console.log(`[AI Study Buddy] User has ${pdfs.length} PDFs available`)
 
     return context
   } catch (error) {
@@ -102,11 +91,6 @@ async function buildStudyBuddyContext(userId, question) {
  * This is the MAIN AI tutor with access to ALL user data
  */
 export async function generateStudyBuddyResponse({ userId, question, conversationHistory = [] }) {
-  console.log(`[AI Study Buddy] ======= GENERATING RESPONSE =======`)
-  console.log(`[AI Study Buddy] User: ${userId}`)
-  console.log(`[AI Study Buddy] Question: "${question}"`)
-  console.log(`[AI Study Buddy] History length: ${conversationHistory.length}`)
-  
   try {
     if (!process.env.GEMINI_API_KEY) {
       console.error('[AI Study Buddy] Missing GEMINI_API_KEY')
@@ -118,7 +102,6 @@ export async function generateStudyBuddyResponse({ userId, question, conversatio
     }
 
     // Build comprehensive context from ALL sources
-    console.log('[AI Study Buddy] Building comprehensive context...')
     const context = await buildStudyBuddyContext(userId, question)
 
     // Build system prompt
@@ -190,7 +173,6 @@ ${conversationContext}
 **Your Response** (200-500 words, personalized and encouraging):`
 
     // Call Gemini API
-    console.log('[AI Study Buddy] Calling Gemini API...')
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash-exp',
       contents: fullPrompt,
@@ -200,8 +182,6 @@ ${conversationContext}
     })
     
     const aiResponse = response.text
-    
-    console.log(`[AI Study Buddy] ✅ Generated response (${aiResponse.length} chars)`)
 
     return {
       success: true,
@@ -318,25 +298,16 @@ export async function getSessionMessages(sessionId, limit = 50) {
  * Routes to correct AI service based on session type
  */
 export async function sendMessageInSession(sessionId, userId, content, useRAG = true) {
-  console.log(`[Session Message] ======= NEW MESSAGE =======`)
-  console.log(`[Session Message] Session: ${sessionId}`)
-  console.log(`[Session Message] User: ${userId}`)
-  console.log(`[Session Message] Content: "${content.substring(0, 100)}..."`)
-  
   try {
     const session = await ChatSession.findOne({ _id: sessionId, user: userId })
     if (!session) {
-      console.error('[Session Message] ❌ Session not found')
+      console.error('[Session Message] Session not found')
       return { success: false, error: 'Session not found' }
     }
 
-    console.log(`[Session Message] Session type: ${session.type}`)
     if (session.type === 'pdf') {
-      console.log(`[Session Message] PDF ID: ${session.pdfId}`)
-      
       // Ensure we have the PDF metadata populated
       if (!session.meta || !session.meta.pdfSummary) {
-        console.log('[Session Message] Populating PDF metadata...')
         const pdf = await Pdf.findById(session.pdfId).select('title summary keyPoints extractedText content pages author').lean()
         if (pdf) {
           session.meta = session.meta || {}
@@ -347,7 +318,6 @@ export async function sendMessageInSession(sessionId, userId, content, useRAG = 
           session.meta.pdfAuthor = pdf.author
           session.meta.hasContent = !!(pdf.extractedText || pdf.content)
           await session.save()
-          console.log('[Session Message] ✅ PDF metadata updated')
         }
       }
     }
@@ -359,7 +329,6 @@ export async function sendMessageInSession(sessionId, userId, content, useRAG = 
       role: 'user',
       content
     })
-    console.log('[Session Message] ✅ User message saved')
 
     // Get conversation history for context
     const recentMessages = await SessionMessage.find({ sessionId })
@@ -368,13 +337,11 @@ export async function sendMessageInSession(sessionId, userId, content, useRAG = 
       .lean()
     
     const conversationHistory = recentMessages.reverse()
-    console.log(`[Session Message] Retrieved ${conversationHistory.length} messages for context`)
 
     // Generate AI response based on session type
     let aiResponseData
     
     if (session.type === 'pdf' && session.pdfId) {
-      console.log('[Session Message] 📄 Using PDF Buddy service...')
       // Import PDF-specific service
       const { generatePDFBuddyResponse } = await import('./aiPdfBuddy.service.js')
       aiResponseData = await generatePDFBuddyResponse({
@@ -384,7 +351,6 @@ export async function sendMessageInSession(sessionId, userId, content, useRAG = 
         conversationHistory
       })
     } else {
-      console.log('[Session Message] 🧠 Using General Study Buddy service...')
       // Use general Study Buddy for non-PDF sessions
       aiResponseData = await generateStudyBuddyResponse({
         userId,
@@ -394,11 +360,9 @@ export async function sendMessageInSession(sessionId, userId, content, useRAG = 
     }
 
     if (!aiResponseData || !aiResponseData.response) {
-      console.error('[Session Message] ❌ AI service returned no response')
+      console.error('[Session Message] AI service returned no response')
       throw new Error('AI service failed to generate response')
     }
-
-    console.log(`[Session Message] ✅ AI response generated (${aiResponseData.response.length} chars)`)
 
     const aiMessage = await SessionMessage.create({
       sessionId,
@@ -412,7 +376,6 @@ export async function sendMessageInSession(sessionId, userId, content, useRAG = 
         pdfSpecific: session.type === 'pdf'
       }
     })
-    console.log('[Session Message] ✅ AI message saved')
 
     // Update session
     session.lastMessageAt = new Date()

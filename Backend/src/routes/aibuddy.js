@@ -12,7 +12,7 @@ import {
 const router = Router()
 
 /**
- * GET /api/ai-buddy/sessions
+ * GET /api/aibuddy/sessions
  * Get all chat sessions for the user
  */
 router.get('/sessions', requireAuth, async (req, res) => {
@@ -38,7 +38,7 @@ router.get('/sessions', requireAuth, async (req, res) => {
 })
 
 /**
- * POST /api/ai-buddy/sessions
+ * POST /api/aibuddy/sessions
  * Create a new chat session
  */
 router.post('/sessions', requireAuth, async (req, res) => {
@@ -66,7 +66,7 @@ router.post('/sessions', requireAuth, async (req, res) => {
 })
 
 /**
- * GET /api/ai-buddy/sessions/pdf/:pdfId
+ * GET /api/aibuddy/sessions/pdf/:pdfId
  * Get or create a session for a specific PDF
  */
 router.get('/sessions/pdf/:pdfId', requireAuth, async (req, res) => {
@@ -100,7 +100,7 @@ router.get('/sessions/pdf/:pdfId', requireAuth, async (req, res) => {
 })
 
 /**
- * GET /api/ai-buddy/sessions/:sessionId/messages
+ * GET /api/aibuddy/sessions/:sessionId/messages
  * Get all messages for a session
  */
 router.get('/sessions/:sessionId/messages', requireAuth, async (req, res) => {
@@ -121,7 +121,7 @@ router.get('/sessions/:sessionId/messages', requireAuth, async (req, res) => {
 })
 
 /**
- * POST /api/ai-buddy/sessions/:sessionId/messages
+ * POST /api/aibuddy/sessions/:sessionId/messages
  * Send a message in a session
  */
 router.post('/sessions/:sessionId/messages', requireAuth, async (req, res) => {
@@ -162,7 +162,7 @@ router.post('/sessions/:sessionId/messages', requireAuth, async (req, res) => {
 })
 
 /**
- * PATCH /api/ai-buddy/sessions/:sessionId
+ * PATCH /api/aibuddy/sessions/:sessionId
  * Update session title
  */
 router.patch('/sessions/:sessionId', requireAuth, async (req, res) => {
@@ -187,7 +187,7 @@ router.patch('/sessions/:sessionId', requireAuth, async (req, res) => {
 })
 
 /**
- * DELETE /api/ai-buddy/sessions/:sessionId
+ * DELETE /api/aibuddy/sessions/:sessionId
  * Delete (archive) a chat session
  */
 router.delete('/sessions/:sessionId', requireAuth, async (req, res) => {

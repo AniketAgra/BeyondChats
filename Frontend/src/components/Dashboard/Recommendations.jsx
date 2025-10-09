@@ -27,9 +27,9 @@ export default function Recommendations({ recommendations, weakTopics, weakTopic
         // Navigate to AI buddy with the weakest topic as query param
         if (weakTopicsData && weakTopicsData.length > 0) {
           const weakestTopic = weakTopicsData[0].topic
-          navigate(`/ai-buddy?topic=${encodeURIComponent(weakestTopic)}`)
+          navigate(`/aibuddy?topic=${encodeURIComponent(weakestTopic)}`)
         } else {
-          navigate('/ai-buddy')
+          navigate('/aibuddy')
         }
         break
       default:

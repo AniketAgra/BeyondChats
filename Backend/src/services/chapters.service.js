@@ -117,7 +117,6 @@ ${(text || '').slice(0, 9000)}
 
   const client = await getClient();
   if (!client) {
-    console.log('⚠️ No LLM client available, using fallback extraction');
     // Dev fallback key points - extract from text
     const lines = (text || '').split('\n').filter(l => l.trim().length > 20 && l.trim().length < 150);
     const points = lines.slice(0, Math.min(8, Math.max(2, Math.floor(lines.length / 20)))).map(l => l.trim());
@@ -125,19 +124,14 @@ ${(text || '').slice(0, 9000)}
   }
   
   try {
-    console.log('🤖 Generating key points with Gemini API...');
     const response = await client.generate({ model: 'gemini-1.5-flash', prompt });
-    console.log('✅ Received response from Gemini');
     
     const output = JSON.parse(response.text || '[]');
     if (Array.isArray(output) && output.length > 0) {
-      console.log(`✅ Successfully generated ${output.length} key points`);
       return output;
     }
-    
-    console.log('⚠️ Gemini returned empty or invalid array, using fallback');
   } catch (error) {
-    console.error('❌ Error generating key points with AI:', error.message);
+    console.error('Error generating key points with AI:', error.message);
   }
   
   // Fallback if parsing fails or AI returns empty - try to extract from text

@@ -178,7 +178,7 @@ export const aiBuddyApi = {
   // Get all chat sessions
   getSessions: async (type = null) => {
     const params = type ? { type } : {}
-    return (await api.get('/ai-buddy/sessions', { params })).data
+    return (await api.get('/aibuddy/sessions', { params })).data
   },
   
   // Create new chat session
@@ -186,24 +186,24 @@ export const aiBuddyApi = {
     const payload = { type }
     if (pdfId) payload.pdfId = pdfId
     if (title) payload.title = title
-    return (await api.post('/ai-buddy/sessions', payload)).data
+    return (await api.post('/aibuddy/sessions', payload)).data
   },
   
   // Get or create session for a specific PDF
   getPDFSession: async (pdfId) => {
-    return (await api.get(`/ai-buddy/sessions/pdf/${pdfId}`)).data
+    return (await api.get(`/aibuddy/sessions/pdf/${pdfId}`)).data
   },
   
   // Get messages for a session
   getMessages: async (sessionId, limit = 50) => {
-    return (await api.get(`/ai-buddy/sessions/${sessionId}/messages`, { 
+    return (await api.get(`/aibuddy/sessions/${sessionId}/messages`, { 
       params: { limit } 
     })).data
   },
   
   // Send message in a session
   sendMessage: async (sessionId, content, useRAG = true) => {
-    return (await api.post(`/ai-buddy/sessions/${sessionId}/messages`, {
+    return (await api.post(`/aibuddy/sessions/${sessionId}/messages`, {
       content,
       useRAG
     })).data
@@ -211,12 +211,12 @@ export const aiBuddyApi = {
   
   // Update session title
   updateSession: async (sessionId, title) => {
-    return (await api.patch(`/ai-buddy/sessions/${sessionId}`, { title })).data
+    return (await api.patch(`/aibuddy/sessions/${sessionId}`, { title })).data
   },
   
   // Delete session
   deleteSession: async (sessionId) => {
-    return (await api.delete(`/ai-buddy/sessions/${sessionId}`)).data
+    return (await api.delete(`/aibuddy/sessions/${sessionId}`)).data
   }
 }
 

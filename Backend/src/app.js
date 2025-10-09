@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import compression from 'compression';
 
 import pdfRouter from './routes/pdf.js';
 import pdfUploadRouter from './routes/pdfRoutes.js';
@@ -10,16 +12,26 @@ import quizRouter from './routes/quiz.js';
 import authRouter from './routes/auth.js';
 import chatRouter from './routes/chat.js';
 import analyticsRouter from './routes/analytics.js';
-import debugRouter from './routes/debug.js';
 import keyFeaturesRouter from './routes/keyFeatures.js';
-import supabaseTestRouter from './routes/supabase-test.js';
 import aiBuddyRouter from './routes/aibuddy.js';
 
 const app = express();
 
 // Core middleware
-const ORIGIN = process.env.ORIGIN || process.env.FRONTEND_URL || 'http://localhost:5173';
+// Configure allowed origin for CORS. In production set ORIGIN or FRONTEND_URL env var.
+const ORIGIN = process.env.ORIGIN || process.env.FRONTEND_URL || 'http://localhost:5174';
 app.use(cors({ origin: ORIGIN, credentials: true }));
+// Enable gzip compression for responses (helps static assets)
+app.use(compression());
+
+// Basic security headers (lightweight alternative to helmet here)
+app.use((req, res, next) => {
+	res.setHeader('X-Content-Type-Options', 'nosniff');
+	res.setHeader('X-Frame-Options', 'DENY');
+	res.setHeader('Referrer-Policy', 'no-referrer-when-downgrade');
+	res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
+	next();
+});
 app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
 
@@ -36,11 +48,21 @@ app.use('/api/auth', authRouter);
 app.use('/api/chat', chatRouter);
 app.use('/api/analytics', analyticsRouter);
 app.use('/api/key-features', keyFeaturesRouter);
-app.use('/api/ai-buddy', aiBuddyRouter);
-// Topics routes removed - topics are now auto-generated per quiz
-if (String(process.env.ENABLE_DEBUG_ROUTES).toLowerCase() === 'true') {
-	app.use('/api/debug', debugRouter);
-	app.use('/api/test', supabaseTestRouter);
+app.use('/api/aibuddy', aiBuddyRouter);
+
+// Serve frontend static assets in production (or when `PUBLIC_DIR` provided)
+const PUBLIC_DIR = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
+try {
+	app.use(express.static(PUBLIC_DIR));
+
+	// SPA fallback: send index.html for unknown non-API routes
+	app.get('*', (req, res, next) => {
+		if (req.path.startsWith('/api/')) return next()
+		res.sendFile(path.join(PUBLIC_DIR, 'index.html'))
+	})
+} catch (e) {
+	// If static folder missing, continue; API still works
+	console.warn('Public folder not served:', e.message)
 }
 
 export default app;

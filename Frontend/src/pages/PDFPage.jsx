@@ -57,7 +57,6 @@ export default function PDFPage() {
       
       // If key features are ready and we have key points, fetch videos if we haven't already
       if (result.status === 'completed' && result.keyPoints?.length > 0 && !videosFetchedRef.current) {
-        console.log('Key features ready, fetching YouTube videos...')
         videosFetchedRef.current = true
         await fetchYouTubeVideos(result.keyPoints)
       }
@@ -76,9 +75,7 @@ export default function PDFPage() {
     try {
       // Combine PDF name and key points to create a topic for video suggestions
       const topic = `${docMeta?.name || docMeta?.filename || ''} ${keyPointsArray.join(' ')}`.trim().slice(0, 300)
-      console.log('Fetching videos for topic:', topic)
       const vids = await ytApi.suggest(topic)
-      console.log('Videos received:', vids)
       setVideos(vids)
     } catch (err) {
       console.error('Failed to fetch YouTube videos:', err)
@@ -92,9 +89,7 @@ export default function PDFPage() {
   const onSummarize = async () => {
     if (!fileSrc && !docMeta?.id) return
     try {
-      console.log('Starting summarization...')
       const { summary } = await pdfApi.summarize({ file: state?.file, pdfId: docMeta?.id })
-      console.log('Summary received:', summary)
       setSummary(summary)
       return summary
     } catch (err) {

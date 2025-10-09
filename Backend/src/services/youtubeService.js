@@ -43,7 +43,6 @@ export async function suggestVideos(topic) {
   const cacheKey = query.toLowerCase().trim();
   const cached = videoCache.get(cacheKey);
   if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
-    console.log('Returning cached YouTube videos for:', cacheKey);
     return cached.videos;
   }
   
@@ -96,7 +95,6 @@ export async function suggestVideos(topic) {
     
     // Cache the results
     videoCache.set(cacheKey, { videos, timestamp: Date.now() });
-    console.log('Cached YouTube videos for:', cacheKey);
     
     return videos;
   } catch (error) {

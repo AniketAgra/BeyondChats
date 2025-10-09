@@ -27,7 +27,7 @@ EduLearn follows a modern **three-tier architecture** with clear separation betw
 │  │  • /api/pdf                 • PDF room joins                      │ │
 │  │  • /api/quiz                • AI streaming responses              │ │
 │  │  • /api/analytics           • Typing indicators                   │ │
-│  │  • /api/ai-buddy                                                  │ │
+│  │  • /api/aibuddy                                                  │ │
 │  │  • /api/notes                                                     │ │
 │  │  • /api/chat                                                      │ │
 │  └───────────────────────────────────────────────────────────────────┘ │
@@ -177,7 +177,7 @@ Return results with feedback
 ```
 User sends message to AI Study Buddy
     ↓
-POST /api/ai-buddy/sessions/:sessionId/messages
+POST /api/aibuddy/sessions/:sessionId/messages
     { content: "Explain Newton's Laws", useRAG: true }
     ↓
 Backend: aiStudyBuddy.service.js
