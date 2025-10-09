@@ -67,28 +67,29 @@ EduLearn is a comprehensive MERN-stack learning platform that revolutionizes how
 
 **Backend `.env`:**
 ```env
-# Server
 PORT=4000
-MONGO_URI=mongodb://localhost:27017/edulearn
-ORIGIN=http://localhost:5174
+MONGO_URI=mongodb://localhost:27017/
+ORIGIN=https://beyondchats-cbtm.onrender.com
+LLM_PROVIDER=gemini
+OPENAI_API_KEY=
+YOUTUBE_API_KEY=
+JWT_ACCESS_TOKEN_SECRET=your_access_token_secret
+JWT_REFRESH_TOKEN_SECRET=your_refresh_token_secret
+GEMINI_API_KEY=
+ENABLE_DEBUG_ROUTES=true
 
-# AI
-GEMINI_API_KEY=your_gemini_key
-OPENAI_API_KEY=your_openai_key
+# Supabase Storage (new)
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_BUCKET=
 
-# Storage
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-SUPABASE_BUCKET=edulearn-pdfs
+# Upload limits 50MB
+MAX_UPLOAD_BYTES=52428800
 
-# Vector DB
-PINECONE_API_KEY=your_pinecone_key
+# Pinecone Vector Database (AI Study Buddy RAG)
+PINECONE_API_KEY=
 PINECONE_ENVIRONMENT=us-east-1
 PINECONE_INDEX_NAME=edulearn-vectors
-
-# Auth
-JWT_ACCESS_TOKEN_SECRET=your_secret_here
-JWT_REFRESH_TOKEN_SECRET=different_secret_here
 ```
 
 **Get API Keys:**
