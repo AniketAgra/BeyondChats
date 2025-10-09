@@ -113,55 +113,106 @@ export async function storeQuizPerformance(userId, quizData) {
 
 /**
  * Query vectors for RAG - General AI Study Buddy
- * Searches across ALL user's data (PDFs, quizzes, notes)
+ * Searches across ALL user's data (PDFs, quizzes, performance)
+ * Used for cross-PDF mentoring and performance-based guidance
  */
 export async function queryGeneralContext(userId, query, topK = 5) {
+  console.log(`[Vector Service] Querying general context for user: ${userId}`)
+  
   if (!isPineconeAvailable()) {
+    console.warn('[Vector Service] Pinecone not available, returning empty matches')
     return { success: false, matches: [] }
   }
 
   try {
     const embedding = await generateEmbedding(query)
     const index = getPineconeIndex()
+    
+    console.log(`[Vector Service] Generated embedding for query: "${query.substring(0, 50)}..."`)
 
     // Search in performance namespace for quiz data
     const performanceNamespace = `${userId}_performance`
-    const performanceResults = await index.namespace(performanceNamespace).query({
-      vector: embedding,
-      topK: 3,
-      includeMetadata: true
-    })
+    
+    let performanceMatches = []
+    try {
+      const performanceResults = await index.namespace(performanceNamespace).query({
+        vector: embedding,
+        topK: Math.min(topK, 5),
+        includeMetadata: true
+      })
+      
+      performanceMatches = performanceResults.matches.map(m => ({
+        score: m.score,
+        text: m.metadata.text || `Quiz performance data`,
+        metadata: m.metadata,
+        type: 'performance'
+      }))
+      
+      console.log(`[Vector Service] Found ${performanceMatches.length} performance matches`)
+    } catch (perfError) {
+      console.warn('[Vector Service] Error querying performance namespace:', perfError.message)
+    }
 
-    // Collect all PDF namespaces for this user and search them
-    // Note: In production, maintain a registry of user's PDFs
-    const pdfResults = []
+    // Get all user PDFs and search their namespaces
+    const Pdf = (await import('../schemas/Pdf.js')).default
+    const userPDFs = await Pdf.find({ user: userId }).select('_id').lean()
+    
+    console.log(`[Vector Service] User has ${userPDFs.length} PDFs to search`)
+    
+    const pdfMatches = []
+    
+    // Search up to 5 most recent PDFs
+    for (const pdf of userPDFs.slice(0, 5)) {
+      try {
+        const pdfNamespace = `${userId}_${pdf._id}`
+        const pdfResults = await index.namespace(pdfNamespace).query({
+          vector: embedding,
+          topK: 2,
+          includeMetadata: true
+        })
+        
+        pdfResults.matches.forEach(m => {
+          if (m.score > 0.7) { // Only include highly relevant matches
+            pdfMatches.push({
+              score: m.score,
+              text: m.metadata.text || 'PDF content',
+              metadata: m.metadata,
+              type: 'pdf'
+            })
+          }
+        })
+      } catch (pdfError) {
+        console.warn(`[Vector Service] Error querying PDF ${pdf._id}:`, pdfError.message)
+      }
+    }
+    
+    console.log(`[Vector Service] Found ${pdfMatches.length} relevant PDF matches`)
+
+    const allMatches = [...performanceMatches, ...pdfMatches]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK)
+
+    console.log(`[Vector Service] Returning ${allMatches.length} total matches`)
 
     return {
       success: true,
-      matches: [
-        ...performanceResults.matches.map(m => ({
-          score: m.score,
-          metadata: m.metadata,
-          type: 'performance'
-        })),
-        ...pdfResults.map(m => ({
-          score: m.score,
-          metadata: m.metadata,
-          type: 'pdf'
-        }))
-      ]
+      matches: allMatches
     }
   } catch (error) {
-    console.error('Failed to query general context:', error)
+    console.error('[Vector Service] Failed to query general context:', error)
     return { success: false, matches: [], error: error.message }
   }
 }
 
 /**
  * Query vectors for PDF-specific context
+ * Used by PDF Buddy for focused, document-specific answers
  */
 export async function queryPDFContext(userId, pdfId, query, topK = 5) {
+  console.log(`[Vector Service] Querying PDF context - User: ${userId}, PDF: ${pdfId}`)
+  
   if (!isPineconeAvailable()) {
+    console.warn('[Vector Service] Pinecone not available for PDF query')
     return { success: false, matches: [] }
   }
 
@@ -169,25 +220,31 @@ export async function queryPDFContext(userId, pdfId, query, topK = 5) {
     const embedding = await generateEmbedding(query)
     const index = getPineconeIndex()
     const namespace = `${userId}_${pdfId}`
+    
+    console.log(`[Vector Service] Searching namespace: ${namespace}`)
 
     const results = await index.namespace(namespace).query({
       vector: embedding,
       topK,
       includeMetadata: true
     })
+    
+    console.log(`[Vector Service] Found ${results.matches.length} matches for PDF query`)
+
+    const matches = results.matches.map(m => ({
+      score: m.score,
+      text: m.metadata.text || '',
+      chapter: m.metadata.chapter || '',
+      pageNumber: m.metadata.pageNumber || 0,
+      metadata: m.metadata
+    }))
 
     return {
       success: true,
-      matches: results.matches.map(m => ({
-        score: m.score,
-        text: m.metadata.text,
-        chapter: m.metadata.chapter,
-        pageNumber: m.metadata.pageNumber,
-        metadata: m.metadata
-      }))
+      matches
     }
   } catch (error) {
-    console.error('Failed to query PDF context:', error)
+    console.error('[Vector Service] Failed to query PDF context:', error)
     return { success: false, matches: [], error: error.message }
   }
 }

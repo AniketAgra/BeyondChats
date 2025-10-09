@@ -5,6 +5,7 @@ import PDFViewer from '../components/PDFViewer/PDFViewer.jsx'
 import RightPanel from '../components/RightPanel/RightPanel.jsx'
 import FloatingAIBuddy from '../components/AIBuddy/FloatingAIBuddy.jsx'
 import { pdfApi, ytApi, keyFeaturesApi } from '../utils/api.js'
+import styles from './PDFPage.module.css'
 
 export default function PDFPage() {
   const { state } = useLocation()
@@ -18,6 +19,7 @@ export default function PDFPage() {
   const [keyFeaturesStatus, setKeyFeaturesStatus] = useState('loading')
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [isRightPanelOpen, setIsRightPanelOpen] = useState(false)
   const videosFetchedRef = useRef(false)
 
   useEffect(() => {
@@ -104,31 +106,11 @@ export default function PDFPage() {
   }
 
   return (
-    <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: isFullscreen 
-        ? 'minmax(60px, 60px) minmax(0, 1fr) minmax(60px, 60px)' 
-        : 'minmax(260px, 260px) minmax(0, 1fr) minmax(360px, 360px)', 
-      gap: 0, 
-      height: 'calc(100vh - 64px)', 
-      overflow: 'hidden',
-      width: '100%',
-      maxWidth: '100vw',
-      transition: 'grid-template-columns 0.3s ease'
-    }}>
+    <div 
+      className={`${styles.pdfPageLayout} ${isFullscreen ? styles.fullscreen : ''}`}
+    >
       <Sidebar keyPoints={keyPoints} status={keyFeaturesStatus} isCollapsed={isFullscreen} onGenerateQuiz={handleGenerateQuiz} />
-      <div className="container" style={{ 
-        paddingTop: 16,
-        paddingLeft: isFullscreen ? 8 : 16,
-        paddingRight: isFullscreen ? 8 : 16,
-        height: '100%', 
-        minHeight: 0, 
-        minWidth: 0,
-        display: 'flex', 
-        flexDirection: 'column',
-        overflow: 'hidden',
-        position: 'relative'
-      }}>
+      <div className={styles.mainContent}>
         <PDFViewer 
           file={fileSrc} 
           summary={summary} 
@@ -139,8 +121,31 @@ export default function PDFPage() {
           onPageChange={setCurrentPage}
         />
         <FloatingAIBuddy isPDFPage={true} />
+        
+        {/* Toggle button for right panel */}
+        <button 
+          className={styles.rightPanelToggle}
+          onClick={() => setIsRightPanelOpen(!isRightPanelOpen)}
+          title={isRightPanelOpen ? "Close panel" : "Open panel"}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isRightPanelOpen ? (
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            ) : (
+              <path d="M9 18l6-6-6-6"/>
+            )}
+          </svg>
+        </button>
       </div>
-      <RightPanel pdfId={id} notePdfId={docMeta?.id} page={currentPage} isCollapsed={isFullscreen} />
+      <RightPanel 
+        pdfId={id} 
+        notePdfId={docMeta?.id} 
+        page={currentPage} 
+        isCollapsed={isFullscreen}
+        isOpen={isRightPanelOpen}
+        onClose={() => setIsRightPanelOpen(false)}
+        keyPoints={keyPoints}
+      />
     </div>
   )
 }

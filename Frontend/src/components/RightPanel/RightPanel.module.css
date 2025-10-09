@@ -6,10 +6,142 @@
   border-left: 1px solid var(--border);
   background: var(--bg);
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .panel.collapsed {
   overflow: hidden;
+}
+
+/* Close button for mobile */
+.closeBtn {
+  display: none;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+  background: var(--accent);
+  color: #083344;
+  border-color: var(--accent);
+}
+
+/* Backdrop overlay for mobile */
+.backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 1024px) {
+  .backdrop {
+    display: block;
+  }
+  
+  .panel {
+    position: fixed;
+    top: 64px;
+    right: -100%;
+    width: 90%;
+    max-width: 400px;
+    height: calc(100vh - 64px);
+    z-index: 1000;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+    transition: right 0.3s ease;
+  }
+
+  .panel.open {
+    right: 0;
+  }
+
+  .closeBtn {
+    display: flex;
+  }
+  
+  .tabs {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px;
+    padding: 10px 8px;
+  }
+  
+  .tabBtn {
+    padding: 8px 6px;
+    font-size: 11px;
+    border-radius: 8px;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .panel {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .tabs {
+    gap: 3px;
+    padding: 8px 6px;
+  }
+  
+  .tabBtn {
+    padding: 7px 4px;
+    font-size: 10px;
+    border-radius: 6px;
+    letter-spacing: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Show shorter text on very small screens */
+  .tabText {
+    display: none;
+  }
+  
+  .tabTextShort {
+    display: inline;
+  }
+}
+
+@media (max-width: 400px) {
+  .tabs {
+    gap: 2px;
+    padding: 8px 4px;
+  }
+  
+  .tabBtn {
+    padding: 6px 3px;
+    font-size: 9px;
+    font-weight: 700;
+  }
 }
 
 .header {
@@ -22,9 +154,8 @@
 
 .tabs {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
   padding: 12px 16px;
 }
 
@@ -34,13 +165,25 @@
   border: 1px solid var(--border);
   color: var(--muted);
   border-radius: 12px;
-  padding: 10px 16px;
+  padding: 10px 12px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: .2px;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tab text responsive visibility */
+.tabTextShort {
+  display: none;
+}
+
+.tabText {
+  display: inline;
 }
 
 .tabBtn:hover {
@@ -106,4 +249,88 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+}
+
+/* Key Points Styles */
+.keyPointsList {
+  padding: 16px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.keyPointsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.keyPointsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.keyPointsList::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.keyPointsList::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+.keyPointItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.keyPointItem:hover {
+  background: var(--bg);
+  border-color: var(--accent);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(145, 201, 182, 0.15);
+}
+
+.keyPointNumber {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #083344;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.keyPointText {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  text-align: center;
+  height: 100%;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.emptyText {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
 }

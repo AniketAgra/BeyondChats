@@ -7,6 +7,12 @@
   --card: #f8fafc;
   --border: #e5e7eb;
 
+  /* AI Buddy Page specific variables */
+  --background: #fafafa;
+  --card-bg: #ffffff;
+  --text-muted: #6b7280;
+  --primary: #2dd4bf;
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -23,6 +29,12 @@
   --accent-strong: #14b8a6;
   --card: #1c1c1c;
   --border: #2a2a2a;
+
+  /* AI Buddy Page specific variables */
+  --background: #0a0a0a;
+  --card-bg: #1c1c1c;
+  --text-muted: #9ca3af;
+  --primary: #14b8a6;
 }
 
 * { box-sizing: border-box; }
@@ -80,9 +92,29 @@ a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
 
 .container {
-  max-width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
+  width: 100%;
+}
+
+/* Responsive container padding */
+@media (max-width: 1024px) {
+  .container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 12px;
+  }
 }
 
 .card {

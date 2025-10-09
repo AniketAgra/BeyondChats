@@ -203,7 +203,115 @@
   font-weight: 600;
 }
 
+/* Mobile First Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--space-3);
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .grid {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .chartCard,
+  .actionsCard,
+  .tableCard {
+    padding: 16px;
+  }
+
+  .cardTitle {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .chartWrapper {
+    height: 220px;
+  }
+
+  .actionBtn {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .tableWrapper {
+    margin: 0 -16px;
+    padding: 0 16px;
+  }
+
+  .table th,
+  .table td {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .table th {
+    font-size: 11px;
+  }
+
+  .score {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--space-2);
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .chartCard,
+  .actionsCard,
+  .tableCard {
+    padding: 12px;
+  }
+
+  .chartWrapper {
+    height: 200px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+    font-size: 11px;
+  }
+}
+
 /* Tablet/Desktop */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    padding: var(--space-4);
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr 280px;
+  }
+}
+
 @media (min-width: 900px) {
   .grid {
     grid-template-columns: 1fr 340px;

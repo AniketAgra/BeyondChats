@@ -1,131 +1,215 @@
 /* Chat Sidebar Styles */
 .sidebar {
-  width: 280px;
-  height: 100%;
-  background: var(--card-bg);
+  width: 300px;
+  height: 100vh;
+  background: var(--bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, left 0.3s ease;
+  position: relative;
+  flex-shrink: 0;
 }
 
-/* Header */
-.header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
+[data-theme='dark'] .sidebar {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 18px;
-}
+/* Header removed - no longer needed */
 
 /* New Chat Button */
 .newChatBtn {
-  margin: 16px;
-  padding: 12px 16px;
-  background: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
+  margin: 24px 16px 16px;
+  padding: 14px 20px;
+  background: transparent;
+  color: var(--accent-strong);
+  border: 2px solid color-mix(in oklab, var(--accent) 40%, transparent);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.newChatBtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    color-mix(in oklab, var(--accent) 5%, transparent), 
+    color-mix(in oklab, var(--accent-strong) 5%, transparent));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.newChatBtn:hover::before {
+  opacity: 1;
 }
 
 .newChatBtn:hover {
-  background: var(--accent);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 6px 20px rgba(45, 212, 191, 0.3);
+  background: color-mix(in oklab, var(--accent) 15%, transparent);
+  border-color: var(--accent-strong);
+}
+
+.newChatBtn:active {
+  transform: translateY(0);
+}
+
+.newChatBtn span {
+  position: relative;
+  z-index: 1;
+}
+
+.newChatBtn svg {
+  position: relative;
+  z-index: 1;
 }
 
 /* Sections */
 .section {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 8px 16px 16px;
   min-height: 0;
+  position: relative;
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.section:first-of-type::before {
+  display: none;
 }
 
 .section::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .section::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 3px;
 }
 
 .section::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 2px;
+  border-radius: 3px;
+}
+
+.section::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }
 
 .sectionHeader {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--muted);
   margin-bottom: 12px;
-  padding: 0 8px;
-  letter-spacing: 0.5px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, 
+    color-mix(in oklab, var(--accent) 15%, transparent),
+    color-mix(in oklab, var(--accent) 8%, transparent));
+  border-radius: 10px;
+  border-left: 3px solid var(--accent-strong);
+  box-shadow: 0 2px 6px rgba(45, 212, 191, 0.08);
+}
+
+.sectionCount {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  background: color-mix(in oklab, var(--accent) 20%, transparent);
+  padding: 3px 8px;
+  border-radius: 12px;
+  min-width: 24px;
+  text-align: center;
 }
 
 /* Session List */
 .sessionList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .emptyState {
-  padding: 20px 12px;
+  padding: 32px 16px;
   text-align: center;
   font-size: 13px;
-  color: var(--text-muted);
-  line-height: 1.5;
+  color: var(--muted);
+  line-height: 1.6;
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+  border-radius: 12px;
+  border: 1px dashed color-mix(in oklab, var(--accent) 30%, transparent);
 }
 
 /* Session Item */
 .sessionItem {
-  padding: 12px;
-  border-radius: 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
+  background: transparent;
+  border: 1px solid transparent;
 }
 
 .sessionItem:hover {
-  background: var(--background);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  border-color: color-mix(in oklab, var(--accent) 30%, transparent);
+  transform: translateX(4px);
 }
 
 .sessionItem.active {
-  background: var(--primary);
-  color: white;
+  background: color-mix(in oklab, var(--accent) 20%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent-strong) 40%, transparent);
+  box-shadow: 0 2px 8px rgba(45, 212, 191, 0.15);
 }
 
-.sessionItem.active .sessionTitle,
+.sessionItem.active .sessionTitle {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .sessionItem.active .sessionMeta {
-  color: white;
+  color: var(--muted);
 }
 
 .sessionContent {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sessionTitle {
@@ -135,56 +219,63 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
+  line-height: 1.4;
 }
 
 .sessionMeta {
-  font-size: 12px;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
 }
 
 /* Session Actions */
 .sessionActions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s ease;
+  transform: translateX(-4px);
 }
 
 .sessionItem:hover .sessionActions {
   opacity: 1;
+  transform: translateX(0);
 }
 
 .sessionItem.active .sessionActions {
   opacity: 1;
+  transform: translateX(0);
 }
 
 .actionBtn {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border: none;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  background: color-mix(in oklab, var(--accent) 20%, transparent);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: var(--text);
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .actionBtn:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
   transform: scale(1.1);
+  color: var(--accent-strong);
 }
 
 .sessionItem.active .actionBtn {
-  color: white;
-  background: rgba(255, 255, 255, 0.2);
+  color: var(--text);
+  background: color-mix(in oklab, var(--accent) 30%, transparent);
 }
 
 .sessionItem.active .actionBtn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: color-mix(in oklab, var(--accent) 45%, transparent);
+  transform: scale(1.1);
 }
 
 /* Edit Mode */
@@ -193,54 +284,414 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  padding: 4px;
 }
 
 .editInput {
   flex: 1;
-  padding: 6px 8px;
-  background: var(--background);
-  border: 1px solid var(--primary);
-  border-radius: 4px;
+  padding: 8px 12px;
+  background: var(--card);
+  border: 2px solid var(--accent-strong);
+  border-radius: 8px;
   font-size: 14px;
   color: var(--text);
   outline: none;
+  transition: all 0.2s ease;
+}
+
+.editInput:focus {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-strong) 20%, transparent);
 }
 
 .editActions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .editActions button {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border: none;
-  background: var(--primary);
-  color: white;
-  border-radius: 4px;
+  background: var(--accent-strong);
+  color: #083344;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  font-weight: 600;
 }
 
 .editActions button:hover {
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
 }
 
 .editActions button:last-child {
-  background: var(--text-muted);
+  background: var(--border);
+  color: var(--text);
+}
+
+.editActions button:last-child:hover {
+  background: color-mix(in oklab, var(--border) 70%, var(--text) 30%);
+}
+
+/* PDF Session Item Styles */
+.pdfSessionItem {
+  border-left: 3px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, 
+    color-mix(in oklab, var(--accent) 8%, transparent),
+    color-mix(in oklab, var(--accent) 3%, transparent));
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pdfSessionItem:hover {
+  border-left-color: var(--accent);
+  background: linear-gradient(135deg, 
+    color-mix(in oklab, var(--accent) 18%, transparent),
+    color-mix(in oklab, var(--accent) 10%, transparent));
+  box-shadow: 0 3px 8px rgba(45, 212, 191, 0.12);
+}
+
+.pdfSessionItem.active {
+  border-left-color: var(--accent-strong);
+  background: linear-gradient(135deg, 
+    color-mix(in oklab, var(--accent) 25%, transparent),
+    color-mix(in oklab, var(--accent) 15%, transparent));
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.2);
+}
+
+.pdfIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, 
+    color-mix(in oklab, var(--accent) 25%, transparent),
+    color-mix(in oklab, var(--accent-strong) 20%, transparent));
+  border-radius: 10px;
+  color: var(--accent-strong);
+  flex-shrink: 0;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(45, 212, 191, 0.15);
+}
+
+.pdfSessionItem:hover .pdfIconWrapper {
+  background: linear-gradient(135deg, 
+    color-mix(in oklab, var(--accent) 35%, transparent),
+    color-mix(in oklab, var(--accent-strong) 30%, transparent));
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 0 4px 10px rgba(45, 212, 191, 0.25);
+}
+
+.pdfSessionItem.active .pdfIconWrapper {
+  background: linear-gradient(135deg, 
+    var(--accent),
+    var(--accent-strong));
+  color: #083344;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(45, 212, 191, 0.35);
+}
+
+.sessionInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pdfSessionItem .sessionInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pdfSessionItem .sessionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdfSessionItem.active .sessionTitle {
+  color: var(--accent-strong);
+  text-shadow: 0 0 1px color-mix(in oklab, var(--accent) 30%, transparent);
+}
+
+/* Enhanced scrolling for PDF section */
+.section:last-child {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.section:last-child .sessionList {
+  max-height: none;
+}
+
+/* Delete Confirmation Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.deleteModal {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 0;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
+}
+
+[data-theme='dark'] .deleteModal {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  padding: 28px 28px 20px;
+  text-align: center;
+  background: rgba(239, 68, 68, 0.05);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.warningIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+}
+
+.modalTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.modalBody {
+  padding: 24px 28px;
+}
+
+.modalText {
+  font-size: 15px;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  line-height: 1.6;
+}
+
+.modalText strong {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.modalSubtext {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  padding: 20px 28px 28px;
+  background: color-mix(in oklab, var(--bg) 70%, var(--card) 30%);
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: color-mix(in oklab, var(--card) 70%, transparent);
+  border-color: color-mix(in oklab, var(--border) 60%, var(--text) 40%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.deleteBtn {
+  flex: 1;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: none;
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.deleteBtn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.deleteBtn:active {
+  transform: translateY(0);
+}
+
+/* Backdrop Overlay */
+.backdrop {
+  display: none;
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -300px;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .sidebar.open {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  [data-theme='dark'] .sidebar {
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+  }
+
+  [data-theme='dark'] .sidebar.open {
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.8);
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
-    width: 260px;
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 100;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    left: -280px;
+  }
+
+  .deleteModal {
+    max-width: 90%;
+    margin: 20px;
+  }
+
+  .modalHeader {
+    padding: 24px 20px 16px;
+  }
+
+  .warningIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .modalTitle {
+    font-size: 20px;
+  }
+
+  .modalBody {
+    padding: 20px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 20px 24px;
   }
 }

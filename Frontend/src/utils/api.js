@@ -189,6 +189,11 @@ export const aiBuddyApi = {
     return (await api.post('/ai-buddy/sessions', payload)).data
   },
   
+  // Get or create session for a specific PDF
+  getPDFSession: async (pdfId) => {
+    return (await api.get(`/ai-buddy/sessions/pdf/${pdfId}`)).data
+  },
+  
   // Get messages for a session
   getMessages: async (sessionId, limit = 50) => {
     return (await api.get(`/ai-buddy/sessions/${sessionId}/messages`, { 

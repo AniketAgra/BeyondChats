@@ -40,6 +40,9 @@ export async function listPdfs(req, res) {
       id: String(d._id),
       url: d.url,
       filename: d.filename,
+      title: d.title || d.filename, // Include title field
+      author: d.author,
+      imageUrl: d.imageUrl,
       size: d.size,
       uploadedAt: d.uploadedAt,
       createdAt: d.createdAt,
@@ -61,6 +64,9 @@ export async function getPdf(req, res) {
       id: String(d._id),
       url: d.url,
       filename: d.filename,
+      title: d.title || d.filename, // Include title field
+      author: d.author,
+      imageUrl: d.imageUrl,
       size: d.size,
       uploadedAt: d.uploadedAt,
       createdAt: d.createdAt,

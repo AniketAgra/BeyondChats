@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from './ChatPanel.module.css'
 import { chatApi } from '../../utils/api.js'
 import useChatSocket from '../../hooks/useChatSocket.js'
 
 export default function ChatPanel({ pdfId }) {
+  const navigate = useNavigate()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [streamingText, setStreamingText] = useState('')
@@ -15,45 +17,42 @@ export default function ChatPanel({ pdfId }) {
   
   // Load chat history on mount or when PDF changes
   useEffect(() => { 
-    if (pdfId && isConnected) {
-      // Join PDF-specific room for real-time updates
-      joinPdf(pdfId, (stats) => {
-        console.log('Memory loaded:', stats)
-      })
-      
-      // Get chat history via Socket.io
-      getChatHistory(pdfId, 50, (data) => {
-        if (data.messages && data.messages.length > 0) {
-          setMessages(data.messages)
+    if (!pdfId) return
+
+    // Always try to load chat history first via REST API (reliable and immediate)
+    (async () => {
+      try {
+        const response = await chatApi.getHistory({ pdfId, limit: 50 })
+        const items = response.items || []
+        
+        if (items.length > 0) {
+          setMessages(items)
         } else {
-          // No messages, show welcome message
           setMessages([{
             role: 'ai',
             content: "Hi there! 👋 I'm your quick AI Buddy here to help with short answers and quick questions!\n\n💡 For quick help, ask me anything!\n🎓 Need detailed explanations? Visit our AI Mentor for in-depth guidance, personalized learning, and comprehensive analysis!",
             _id: 'welcome'
           }])
         }
+      } catch (err) {
+        console.error('Failed to load chat history:', err)
+        setMessages([{
+          role: 'ai',
+          content: "Hi there! 👋 I'm your quick AI Buddy here to help with short answers and quick questions!\n\n💡 For quick help, ask me anything!\n🎓 Need detailed explanations? Visit our AI Mentor for in-depth guidance, personalized learning, and comprehensive analysis!",
+          _id: 'welcome'
+        }])
+      }
+    })()
+
+    // If Socket.io is connected, also join the room for real-time updates
+    if (isConnected) {
+      joinPdf(pdfId, (stats) => {
+        console.log('Memory loaded:', stats)
       })
       
       return () => {
         leavePdf(pdfId)
       }
-    } else if (!isConnected) {
-      // Fallback to REST API if Socket.io isn't connected
-      (async () => {
-        try {
-          const items = await chatApi.list(pdfId)
-          setMessages(items)
-          
-          if (items.length === 0 && pdfId) {
-            setMessages([{
-              role: 'ai',
-              content: "Hi there! 👋 I'm your quick AI Buddy here to help with short answers and quick questions!\n\n💡 For quick help, ask me anything!\n🎓 Need detailed explanations? Visit our AI Mentor for in-depth guidance, personalized learning, and comprehensive analysis!",
-              _id: 'welcome'
-            }])
-          }
-        } catch {}
-      })()
     }
   }, [pdfId, isConnected])
 
@@ -210,7 +209,7 @@ export default function ChatPanel({ pdfId }) {
                   {m.role === 'ai' && m.content.includes('AI Mentor') && (
                     <button 
                       className={styles.MentorLink}
-                      onClick={() => window.open('/ai-Mentor?pdf=' + pdfId, '_blank')}
+                      onClick={() => navigate('/aibuddy')}
                     >
                       🎓 Go to AI Mentor
                     </button>

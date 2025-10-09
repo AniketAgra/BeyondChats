@@ -346,3 +346,10 @@
   line-height: 1;
   letter-spacing: -0.2px;
 }
+
+/* Responsive - Hide sidebar on mobile */
+@media (max-width: 1024px) {
+  .sidebar {
+    display: none !important;
+  }
+}

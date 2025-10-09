@@ -507,4 +507,168 @@
 	display: none !important;
 }
 
-@media (max-width: 900px) { .viewer { padding: var(--space-2); } }
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .toolbar {
+    padding: 10px 12px;
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  
+  .wrapper {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+  
+  .pageContainer {
+    padding: var(--space-3);
+  }
+}
+
+@media (max-width: 900px) { 
+  .viewer { 
+    padding: var(--space-2); 
+  }
+  
+  .toolbar {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  
+  .summarizeBtn {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding-bottom: var(--space-3);
+  }
+  
+  .toolbar {
+    padding: 8px 10px;
+    margin-bottom: var(--space-2);
+  }
+  
+  .navBtn {
+    min-width: 32px;
+    height: 32px;
+    padding: 6px;
+  }
+  
+  .meta {
+    font-size: 13px;
+    min-width: 60px;
+  }
+  
+  .currentPage {
+    font-size: 14px;
+  }
+  
+  .fullscreenBtn,
+  .summarizeBtn {
+    height: 32px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .fullscreenBtn {
+    min-width: 32px;
+    padding: 6px 8px;
+  }
+  
+  .pageContainer {
+    padding: var(--space-2);
+  }
+  
+  .summarySection {
+    padding: 0 var(--space-3);
+  }
+  
+  .summary {
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .wrapper {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+  
+  .toolbar {
+    padding: 6px 8px;
+    gap: 4px;
+    margin-top: var(--space-2);
+  }
+  
+  .navGroup {
+    gap: 4px;
+  }
+  
+  .navBtn {
+    min-width: 28px;
+    height: 28px;
+  }
+  
+  .navBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .meta {
+    font-size: 12px;
+    min-width: 50px;
+    padding: 0 4px;
+  }
+  
+  .currentPage {
+    font-size: 13px;
+  }
+  
+  .fullscreenBtn svg {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .summarizeBtn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  
+  .summarizeBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .pageContainer {
+    padding: var(--space-1);
+  }
+  
+  .summarySection {
+    padding: 0 var(--space-2);
+    margin-top: var(--space-4);
+  }
+  
+  .summary {
+    padding: var(--space-3);
+  }
+  
+  .summary h3 {
+    font-size: 16px;
+  }
+  
+  .summaryText {
+    font-size: 13px;
+  }
+  
+  .loadingBox {
+    padding: var(--space-4);
+    min-height: 150px;
+  }
+  
+  .loadingText {
+    font-size: 13px;
+  }
+}

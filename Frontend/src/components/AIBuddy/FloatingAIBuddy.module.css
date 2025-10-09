@@ -63,6 +63,13 @@
   transform: scale(1.1);
 }
 
+@media (max-width: 1024px) {
+  .fabPDF {
+    right: 16px;
+    bottom: 80px;
+  }
+}
+
 @media (max-width: 640px) { 
   .fab { 
     right: 16px; 
@@ -72,8 +79,8 @@
   }
   
   .fabPDF { 
-    right: 80px; 
-    bottom: 16px; 
+    right: 16px; 
+    bottom: 80px; 
     width: 52px; 
     height: 52px; 
   } 

@@ -97,6 +97,37 @@ export default function AIBuddyPage() {
     }
   }
 
+  const handleSelectPDF = async (pdfId) => {
+    try {
+      setIsLoading(true)
+      
+      // Check if session already exists for this PDF
+      const existingSession = sessions.find(
+        s => s.type === 'pdf' && s.pdfId?._id === pdfId
+      )
+      
+      if (existingSession) {
+        // Use existing session
+        setActiveSessionId(existingSession._id)
+      } else {
+        // Create new PDF session
+        const response = await aiBuddyApi.getPDFSession(pdfId)
+        
+        if (response.created) {
+          // New session created, add to sessions list
+          setSessions(prev => [response.session, ...prev])
+        }
+        
+        setActiveSessionId(response.session._id)
+        setMessages([])
+      }
+    } catch (error) {
+      console.error('Failed to select PDF:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleCreateSessionWithTopic = async (topicName) => {
     try {
       const response = await aiBuddyApi.createSession('general', null, `Learn: ${topicName}`)
@@ -168,8 +199,6 @@ export default function AIBuddyPage() {
   }
 
   const handleDeleteSession = async (sessionId) => {
-    if (!confirm('Are you sure you want to delete this chat?')) return
-    
     try {
       await aiBuddyApi.deleteSession(sessionId)
       setSessions(prev => prev.filter(s => s._id !== sessionId))
@@ -230,18 +259,21 @@ export default function AIBuddyPage() {
   }
 
   return (
-    <div className={styles.pageContainer}>
+    <>
+      <div style={{ height: '0px', display:'block'}} />
+      <div className={styles.pageContainer}>
       {/* Sidebar */}
-      {sidebarOpen && (
-        <ChatSidebar
-          sessions={sessions}
-          activeSessionId={activeSessionId}
-          onSelectSession={handleSelectSession}
-          onCreateSession={handleCreateSession}
-          onDeleteSession={handleDeleteSession}
-          onRenameSession={handleRenameSession}
-        />
-      )}
+      <ChatSidebar
+        sessions={sessions}
+        activeSessionId={activeSessionId}
+        onSelectSession={handleSelectSession}
+        onCreateSession={handleCreateSession}
+        onDeleteSession={handleDeleteSession}
+        onRenameSession={handleRenameSession}
+        onSelectPDF={handleSelectPDF}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
 
       <div className={styles.chatContainer}>
         {/* Header */}
@@ -250,6 +282,7 @@ export default function AIBuddyPage() {
             <button 
               className={styles.menuBtn}
               onClick={() => setSidebarOpen(!sidebarOpen)}
+              title={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
             >
               <FaBars size={20} />
             </button>
@@ -275,7 +308,7 @@ export default function AIBuddyPage() {
             <div className={styles.loadingContainer}>
               <div className={styles.spinner}></div>
             </div>
-          ) : messages.length === 0 ? (
+          ) : !activeSessionId ? (
             <div className={styles.emptyState}>
               <div className={styles.emptyIcon}>
                 <FaStar size={48} />
@@ -283,6 +316,19 @@ export default function AIBuddyPage() {
               <h2 className={styles.emptyTitle}>Welcome to AI Study Buddy!</h2>
               <p className={styles.emptyText}>
                 I'm your personalized AI tutor, trained on your PDFs, notes, and quiz performance. 
+                Ask me anything about your study materials or request detailed explanations!
+              </p>
+              <p className={styles.emptySubtext}>
+                Select a chat from the sidebar or create a new one to get started.
+              </p>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>
+                <FaStar size={48} />
+              </div>
+              <h2 className={styles.emptyTitle}>Start the conversation!</h2>
+              <p className={styles.emptyText}>
                 Ask me anything about your study materials or request detailed explanations!
               </p>
               
@@ -355,31 +401,39 @@ export default function AIBuddyPage() {
         </div>
 
         {/* Input Area */}
-        <div className={styles.inputContainer}>
-          <div className={styles.inputWrapper}>
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask me anything about your study materials..."
-              className={styles.input}
-              rows={1}
-              disabled={isLoading}
-            />
-            <button
-              onClick={() => handleSend()}
-              disabled={!input.trim() || isLoading}
-              className={styles.sendButton}
-            >
-              <FaPaperPlane size={20} />
-            </button>
+        {activeSessionId ? (
+          <div className={styles.inputContainer}>
+            <div className={styles.inputWrapper}>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask me anything about your study materials..."
+                className={styles.input}
+                rows={1}
+                disabled={isLoading}
+              />
+              <button
+                onClick={() => handleSend()}
+                disabled={!input.trim() || isLoading}
+                className={styles.sendButton}
+              >
+                <FaPaperPlane size={20} />
+              </button>
+            </div>
+            <p className={styles.inputHint}>
+              Press Enter to send • Shift + Enter for new line
+            </p>
           </div>
-          <p className={styles.inputHint}>
-            Press Enter to send • Shift + Enter for new line
-          </p>
-        </div>
+        ) : (
+          <div className={styles.noSessionPlaceholder}>
+            <FaBrain size={32} />
+            <p>Select a chat or create a new one to start chatting</p>
+          </div>
+        )}
       </div>
     </div>
+    </>
   )
 }

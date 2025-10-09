@@ -7,13 +7,16 @@ async function createLlmClient() {
   if (provider === 'gemini' || provider === 'google') {
     const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) return null;
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const { GoogleGenAI } = await import('@google/genai');
+    const ai = new GoogleGenAI({ apiKey });
     return {
       async generate({ model = 'gemini-2.0-flash-exp', prompt }) {
-        const m = genAI.getGenerativeModel({ model });
-        const res = await m.generateContent(prompt);
-        const text = res.response?.text?.() || res.response?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const res = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: { temperature: 0.7 }
+        });
+        const text = res.text || '';
         return { text };
       }
     }
