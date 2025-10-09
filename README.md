@@ -105,10 +105,10 @@ PINECONE_INDEX_NAME=edulearn-vectors
 Comprehensive documentation is available in the `/documentation` folder:
 
 ### 📚 Getting Started
-- [**Introduction**](./documentation/overview/01_Introduction.md) - What is EduLearn, features, use cases
-- [**System Architecture**](../BeyondChats/documentation/overview/02_System_Architecture.md) - Technical design, data flow
-- [**Developer Guide**](../BeyondChats/documentation/overview/03_Developer_Guide.md) - Setup, development workflow
-- [**Deployment Guide**](../BeyondChats/documentation/overview/04_Deployment_Guide.md) - Production deployment
+- [**Introduction**](../../documentation/overview/01_Introduction.md) - What is EduLearn, features, use cases
+- [**System Architecture**](../../documentation/overview/02_System_Architecture.md) - Technical design, data flow
+- [**Developer Guide**](../../documentation/overview/03_Developer_Guide.md) - Setup, development workflow
+- [**Deployment Guide**](../../documentation/overview/04_Deployment_Guide.md) - Production deployment
 
 ### 📄 Features
 - [**Dashboard**](../BeyondChats/documentation/pages/page_dashboard.md) - Analytics and performance tracking
