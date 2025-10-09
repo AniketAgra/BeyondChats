@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "deploy:frontend": "bash ./scripts/deploy_frontend.sh ../Frontend ./public || echo 'no frontend present'",
+    "postinstall": "npm run deploy:frontend || true"
   },
   "dependencies": {
     "@google/genai": "^1.23.0",

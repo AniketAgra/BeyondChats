@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import compression from 'compression';
+import fs from 'fs';
 
 import pdfRouter from './routes/pdf.js';
 import pdfUploadRouter from './routes/pdfRoutes.js';
@@ -56,10 +57,16 @@ try {
 	app.use(express.static(PUBLIC_DIR));
 
 	// SPA fallback: send index.html for unknown non-API routes
-	app.get('*', (req, res, next) => {
-		if (req.path.startsWith('/api/')) return next()
-		res.sendFile(path.join(PUBLIC_DIR, 'index.html'))
-	})
+			app.get('*', (req, res, next) => {
+			if (req.path.startsWith('/api/')) return next()
+			const indexFile = path.join(PUBLIC_DIR, 'index.html')
+			if (fs.existsSync(indexFile)) {
+				return res.sendFile(indexFile)
+			}
+			// Provide a clear message instead of throwing ENOENT
+			console.warn(`Missing frontend build: ${indexFile}`)
+			return res.status(404).send('Frontend build not found. Please run the frontend build and copy files to the public directory.')
+		})
 } catch (e) {
 	// If static folder missing, continue; API still works
 	console.warn('Public folder not served:', e.message)
