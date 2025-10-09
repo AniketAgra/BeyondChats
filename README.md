@@ -106,19 +106,19 @@ Comprehensive documentation is available in the `/documentation` folder:
 
 ### 📚 Getting Started
 - [**Introduction**](./documentation/overview/01_Introduction.md) - What is EduLearn, features, use cases
-- [**System Architecture**](./documentation/overview/02_System_Architecture.md) - Technical design, data flow
-- [**Developer Guide**](./documentation/overview/03_Developer_Guide.md) - Setup, development workflow
-- [**Deployment Guide**](./documentation/overview/04_Deployment_Guide.md) - Production deployment
+- [**System Architecture**](../BeyondChats/documentation/overview/02_System_Architecture.md) - Technical design, data flow
+- [**Developer Guide**](../BeyondChats/documentation/overview/03_Developer_Guide.md) - Setup, development workflow
+- [**Deployment Guide**](../BeyondChats/documentation/overview/04_Deployment_Guide.md) - Production deployment
 
 ### 📄 Features
-- [**Dashboard**](./documentation/pages/page_dashboard.md) - Analytics and performance tracking
-- [**PDF Viewer**](./documentation/pages/page_pdf_viewer.md) - Document interaction and AI chat
+- [**Dashboard**](../BeyondChats/documentation/pages/page_dashboard.md) - Analytics and performance tracking
+- [**PDF Viewer**](../BeyondChats/documentation/pages/page_pdf_viewer.md) - Document interaction and AI chat
 - More in `/documentation/pages/`
 
 ### 🌐 Technical Reference
-- [**API Endpoints**](./documentation/api/api_endpoints.md) - Complete REST API reference
-- [**Tech Stack**](./documentation/technical/tech_stack.md) - Technologies and tools used
-- [**Services**](./documentation/services/) - External integrations
+- [**API Endpoints**](../BeyondChats/documentation/api/api_endpoints.md) - Complete REST API reference
+- [**Tech Stack**](../BeyondChats/documentation/technical/tech_stack.md) - Technologies and tools used
+- [**Services**](../BeyondChats/documentation/services/) - External integrations
 
 ---
 
@@ -185,7 +185,7 @@ BeyondChats/
 - Supabase Storage (PDF files)
 - MongoDB Atlas (database)
 
-[**Full Tech Stack →**](./documentation/technical/tech_stack.md)
+[**Full Tech Stack →**](../BeyondChats/documentation/technical/tech_stack.md)
 
 ---
 
@@ -234,7 +234,7 @@ vercel --prod
 4. Start Command: `npm start`
 5. Add environment variables
 
-[**Detailed Deployment Guide →**](./documentation/overview/04_Deployment_Guide.md)
+[**Detailed Deployment Guide →**](../BeyondChats/documentation/overview/04_Deployment_Guide.md)
 
 ---
 
