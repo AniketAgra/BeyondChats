@@ -41,7 +41,7 @@ export default function RightPanel({ pdfId, notePdfId, page, isCollapsed = false
             <span className={styles.tabTextShort}>Note</span>
           </button>
           <button
-            className={tab==='keypoints' ? `${styles.tabBtn} ${styles.tabActive}` : styles.tabBtn}
+            className={`${tab==='keypoints' ? `${styles.tabBtn} ${styles.tabActive}` : styles.tabBtn} ${styles.keyPointsTab}`}
             onClick={() => setTab('keypoints')}
             title="Key Points"
           >

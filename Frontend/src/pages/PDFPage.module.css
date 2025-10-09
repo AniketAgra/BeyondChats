@@ -73,9 +73,49 @@
   margin-left: -4px;
 }
 
+/* Quiz Toggle Button (Mobile Only) */
+.quizToggle {
+  position: fixed;
+  left: 0;
+  bottom: 80px;
+  width: 56px;
+  height: 56px;
+  border-radius: 0 50% 50% 0;
+  background: var(--accent);
+  color: #083344;
+  border: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 4px 0 16px rgba(145, 201, 182, 0.4);
+  z-index: 998;
+  transition: all 0.3s ease;
+  padding-left: 8px;
+}
+
+.quizToggle:hover {
+  background: var(--accent-strong);
+  transform: translateX(-4px);
+  box-shadow: 6px 0 20px rgba(145, 201, 182, 0.6);
+}
+
+.quizToggle:active {
+  transform: translateX(0);
+}
+
+.quizToggle svg {
+  flex-shrink: 0;
+  margin-right: -4px;
+}
+
 /* Responsive Layout */
 @media (max-width: 1024px) {
   .rightPanelToggle {
+    display: flex;
+  }
+  
+  .quizToggle {
     display: flex;
   }
   
@@ -112,6 +152,11 @@
     width: 52px;
     height: 52px;
   }
+  
+  .quizToggle {
+    width: 52px;
+    height: 52px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -127,5 +172,16 @@
   .rightPanelToggle svg {
     width: 18px;
     height: 18px;
+  }
+  
+  .quizToggle {
+    width: 48px;
+    height: 48px;
+    bottom: 70px;
+  }
+  
+  .quizToggle svg {
+    width: 20px;
+    height: 20px;
   }
 }

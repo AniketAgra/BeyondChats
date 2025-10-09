@@ -87,6 +87,11 @@
     display: flex;
   }
   
+  /* Show Key Points tab on mobile */
+  .keyPointsTab {
+    display: block !important;
+  }
+  
   .tabs {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 4px;
@@ -154,9 +159,14 @@
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
   padding: 12px 16px;
+}
+
+/* Hide Key Points tab on large screens */
+.keyPointsTab {
+  display: none;
 }
 
 .tabBtn {
