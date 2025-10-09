@@ -60,8 +60,8 @@ EduLearn is a comprehensive MERN-stack learning platform that revolutionizes how
    ```
 
 4. **Access the app**
-   - Frontend: http://localhost:5174
-   - Backend: http://localhost:4000
+   - Deployed: https://beyondchats-cbtm.onrender.com
+   - Local (development): Frontend: http://localhost:5174, Backend: http://localhost:4000
 
 ### Required Environment Variables
 

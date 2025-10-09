@@ -186,7 +186,7 @@ server {
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://localhost:4000;
+  proxy_pass https://beyondchats-cbtm.onrender.com;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -349,7 +349,7 @@ Use different secrets for access and refresh tokens.
 Backend `src/app.js`:
 
 ```javascript
-const ORIGIN = process.env.ORIGIN || 'http://localhost:5174';
+const ORIGIN = process.env.ORIGIN || 'https://beyondchats-cbtm.onrender.com';
 app.use(cors({ 
   origin: ORIGIN, 
   credentials: true 

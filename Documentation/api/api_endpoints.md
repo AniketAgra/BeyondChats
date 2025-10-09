@@ -3,7 +3,7 @@
 ## Base URL
 
 **Development:** `http://localhost:4000/api`  
-**Production:** `https://your-backend-domain.com/api`
+**Production:** `https://beyondchats-cbtm.onrender.com/api`
 
 ---
 
@@ -1029,7 +1029,9 @@ Content-Type: application/json
 ### Connect
 
 ```javascript
-const socket = io('http://localhost:4000', {
+// Development: use http://localhost:4000
+// Production / Deployed:
+const socket = io('https://beyondchats-cbtm.onrender.com', {
   auth: { token: 'Bearer <access_token>' }
 });
 ```

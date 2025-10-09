@@ -35,9 +35,14 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '5mb' }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Health
 app.get('/api/health', (_, res) => res.json({ ok: true }));
+
+app.get("*name", (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 // API routes
 app.use('/api/pdf', pdfRouter);
@@ -51,25 +56,5 @@ app.use('/api/analytics', analyticsRouter);
 app.use('/api/key-features', keyFeaturesRouter);
 app.use('/api/aibuddy', aiBuddyRouter);
 
-// Serve frontend static assets in production (or when `PUBLIC_DIR` provided)
-const PUBLIC_DIR = process.env.PUBLIC_DIR || path.join(process.cwd(), 'public');
-try {
-	app.use(express.static(PUBLIC_DIR));
-
-	// SPA fallback: send index.html for unknown non-API routes
-			app.get('*', (req, res, next) => {
-			if (req.path.startsWith('/api/')) return next()
-			const indexFile = path.join(PUBLIC_DIR, 'index.html')
-			if (fs.existsSync(indexFile)) {
-				return res.sendFile(indexFile)
-			}
-			// Provide a clear message instead of throwing ENOENT
-			console.warn(`Missing frontend build: ${indexFile}`)
-			return res.status(404).send('Frontend build not found. Please run the frontend build and copy files to the public directory.')
-		})
-} catch (e) {
-	// If static folder missing, continue; API still works
-	console.warn('Public folder not served:', e.message)
-}
 
 export default app;

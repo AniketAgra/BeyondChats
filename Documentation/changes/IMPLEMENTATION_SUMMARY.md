@@ -139,7 +139,7 @@ OPENAI_MODEL=gpt-4o-mini
 
 # Server
 PORT=4000
-ORIGIN=http://localhost:5174
+ORIGIN=https://beyondchats-cbtm.onrender.com
 
 # Database
 MONGO_URI=mongodb://localhost:27017/beyondchats

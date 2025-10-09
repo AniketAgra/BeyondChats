@@ -39,7 +39,7 @@
 │                            ↕                                        │
 │  ┌─────────────────────────────────────────────────────────────┐  │
 │  │              Socket.io Client                               │  │
-│  │  WebSocket Connection: ws://localhost:4000                  │  │
+│  │  WebSocket Connection: ws://localhost:4000 (dev) / wss://beyondchats-cbtm.onrender.com (deployed)                  │  │
 │  │  Auth: JWT Token from localStorage                          │  │
 │  └─────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
@@ -55,7 +55,7 @@
 │  │  ┌───────────────────────────────────────────────────────┐ │  │
 │  │  │  HTTP Server (Express + Socket.io)                    │ │  │
 │  │  │  • Port: 4000                                         │ │  │
-│  │  │  • CORS: http://localhost:5174                       │ │  │
+│  │  │  • CORS: http://localhost:5174 (dev) / https://beyondchats-cbtm.onrender.com (deployed)                       │ │  │
 │  │  │  • REST API: /api/*                                   │ │  │
 │  │  │  • WebSocket: Socket.io                               │ │  │
 │  │  └───────────────────────────────────────────────────────┘ │  │

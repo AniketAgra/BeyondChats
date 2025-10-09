@@ -62,7 +62,7 @@ Start the backend:
 npm run dev
 ```
 
-Backend runs on `http://localhost:4000`
+Backend runs on `http://localhost:4000` (development) and deployed backend is `https://beyondchats-cbtm.onrender.com`
 
 ### 3. Frontend Setup
 
@@ -74,7 +74,7 @@ npm install
 npm run dev
 ```
 
-Frontend runs on `http://localhost:5174`
+Frontend runs on `http://localhost:5174` (development). Deployed frontend: `https://beyondchats-cbtm.onrender.com`
 
 ### 4. Access the Application
 
@@ -97,7 +97,7 @@ Create an account and start using EduLearn! 🎉
 ```env
 PORT=4000                              # Backend server port
 MONGO_URI=mongodb://localhost:27017/edulearn  # MongoDB connection string
-ORIGIN=http://localhost:5174           # Frontend URL for CORS
+ORIGIN=https://beyondchats-cbtm.onrender.com           # Frontend URL for CORS (change to localhost for local dev)
 ```
 
 **AI Configuration:**
@@ -237,13 +237,13 @@ npm run preview    # Preview production build locally
 ### 1. Health Check
 
 ```bash
-curl http://localhost:4000/api/health
+curl http://localhost:4000/api/health  # (or check https://beyondchats-cbtm.onrender.com/api/health in production)
 # Expected: {"ok":true}
 ```
 
 ### 2. Test PDF Upload
 
-1. Go to `http://localhost:5174/library`
+1. Go to `http://localhost:5174/library` (or visit https://beyondchats-cbtm.onrender.com/library for deployed site)
 2. Click "Upload PDF"
 3. Select a PDF file
 4. Verify it appears in the library

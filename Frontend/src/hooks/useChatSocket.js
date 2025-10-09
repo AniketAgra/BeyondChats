@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
 
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000'
+const DEFAULT_SOCKET = 'https://beyondchats-cbtm.onrender.com'
+const SOCKET_URL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace('/api', '')
+  : DEFAULT_SOCKET
 
 /**
  * Custom hook for real-time chat with Socket.io
