@@ -2,8 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import compression from 'compression';
 import fs from 'fs';
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import pdfRouter from './routes/pdf.js';
 import pdfUploadRouter from './routes/pdfRoutes.js';
